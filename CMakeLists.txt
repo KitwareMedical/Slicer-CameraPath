@@ -34,7 +34,18 @@ set(CMAKE_MODULE_PATH ${${kit}_CMAKE_DIRS} ${CMAKE_MODULE_PATH})
 set(EXTERNAL_PROJECT_DIR ${${kit}_SUPERBUILD_DIR})
 include(ExternalProject)
 include(ExternalProjectDependency)
-include(OSXVariables) # Must be called before "project"
+
+#-----------------------------------------------------------------------------
+if(APPLE)
+  # Note: By setting CMAKE_OSX_* variables before any enable_language() or project() calls,
+  #       we ensure that the bitness, and C++ standard library will be properly detected.
+  include(OSXVariables)  # Must be called before "project"
+  mark_as_superbuild(
+    VARS CMAKE_OSX_ARCHITECTURES:STRING CMAKE_OSX_SYSROOT:PATH CMAKE_OSX_DEPLOYMENT_TARGET:STRING
+    ALL_PROJECTS
+    )
+endif()
+include(OSXVariables)
 
 #-----------------------------------------------------------------------------
 project(${kit})
