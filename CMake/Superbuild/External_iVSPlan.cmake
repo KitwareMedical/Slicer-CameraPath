@@ -19,7 +19,7 @@
 # External project for the project.
 #
 
-set(proj Ninja)
+set(proj iVSPlan)
 
 # Set dependency list
 set(${proj}_DEPENDENCIES VTKv6 ITKv4)
