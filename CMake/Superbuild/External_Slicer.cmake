@@ -91,7 +91,7 @@ if(NOT DEFINED ${proj}_DIR)
     ThresholdScalarVolume
     VotingBinaryHoleFillingImageFilter
     MergeModels
-    ModelMaker
+    # ModelMaker
     ResampleDTIVolume
     # ResampleScalarVectorDWIVolume # Needed by 'CropVolume' module
     )
@@ -137,7 +137,7 @@ if(NOT DEFINED ${proj}_DIR)
       # Qt
       -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
       -D${proj}_REQUIRED_QT_VERSION:STRING=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}
-      #-D${proj}_ADDITIONAL_REQUIRED_QT_MODULES:STRING=PHONON
+      -D${proj}_ADDITIONAL_REQUIRED_QT_MODULES:STRING=PHONON
       # External projects
       -DEXTERNAL_PROJECT_ADDITIONAL_DIR:PATH=${${APPLICATION_NAME}_SUPERBUILD_DIR}
       -D${proj}_ADDITIONAL_DEPENDENCIES:STRING=${${proj}_INTERNAL_DEPENDENCIES_LIST}
