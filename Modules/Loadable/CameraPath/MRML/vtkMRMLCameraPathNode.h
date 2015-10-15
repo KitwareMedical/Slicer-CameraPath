@@ -12,6 +12,49 @@
 #include <utility>
 #include <vector>
 
+struct KeyFrame
+{
+  vtkSmartPointer<vtkMRMLCameraNode> Camera;
+  double Time;
+  //std::string ID;
+  //std::string Label;
+  //bool Locked;
+  //bool Visibility;
+
+  KeyFrame(vtkMRMLCameraNode* camera = NULL,
+           double time = 0.0):
+      Camera(camera),
+      Time(time)
+  {}
+
+  KeyFrame& operator = (const KeyFrame& a)
+    {
+    Camera = a.Camera;
+    Time = a.Time;
+    return *this;
+    }
+  bool operator < (const KeyFrame& a) const
+    {
+    return Time < a.Time;
+    }
+  bool operator == (const KeyFrame& a) const
+    {
+    return (Camera == a.Camera && Time == a.Time); //TODO : camera, check members not pointer ?
+    }
+};
+typedef std::vector<KeyFrame> KeyFrameVector;
+
+struct timeEqual
+{
+  timeEqual(double const& time) : Time(time) { }
+  double Time;
+
+  bool operator ()(const KeyFrame& a)
+    {
+    return Time == a.Time;
+    }
+};
+
 /// \brief MRML node to hold the information about a camera path.
 ///
 class VTK_SLICER_CAMERAPATH_MODULE_MRML_EXPORT vtkMRMLCameraPathNode:
@@ -19,8 +62,6 @@ class VTK_SLICER_CAMERAPATH_MODULE_MRML_EXPORT vtkMRMLCameraPathNode:
 {
 public:
   typedef vtkMRMLCameraPathNode Self;
-  typedef std::pair<vtkMRMLCameraNode*, double> KeyFrameType;
-  typedef std::vector<KeyFrameType> KeyFramesType;
 
   enum {PATH_NOT_CREATED=0,
         PATH_NOT_UP_TO_DATE,
@@ -55,23 +96,23 @@ public:
   double GetMinimumT();
   double GetMaximumT();
 
-  KeyFramesType GetKeyFrames();
-  KeyFrameType GetKeyFrame(vtkIdType index);
+  KeyFrameVector GetKeyFrames();
+  KeyFrame GetKeyFrame(vtkIdType index);
   double GetKeyFrameTime(vtkIdType index);
   vtkMRMLCameraNode* GetKeyFrameCamera(vtkIdType index);
   void GetKeyFramePosition(vtkIdType index, double position[3] = 0);
   void GetKeyFrameFocalPoint(vtkIdType index, double focalPoint[3] = 0);
   void GetKeyFrameViewUp(vtkIdType index, double viewUp[3] = 0);
 
-  void SetKeyFrames(KeyFramesType keyFrames);
-  void SetKeyFrame(vtkIdType index, KeyFrameType keyFrame);
+  void SetKeyFrames(KeyFrameVector keyFrames);
+  void SetKeyFrame(vtkIdType index, KeyFrame keyFrame);
   void SetKeyFrameTime(vtkIdType index, double time);
   void SetKeyFrameCamera(vtkIdType index, vtkMRMLCameraNode* camera);
   void SetKeyFramePosition(vtkIdType index, double position[3]);
   void SetKeyFrameFocalPoint(vtkIdType index, double focalPoint[3]);
   void SetKeyFrameViewUp(vtkIdType index, double viewUp[3]);
 
-  void AddKeyFrame(KeyFrameType keyFrame);
+  void AddKeyFrame(KeyFrame keyFrame);
   void AddKeyFrame(double t, vtkMRMLCameraNode* camera);
   void AddKeyFrame(double t,
                    double position[3],
