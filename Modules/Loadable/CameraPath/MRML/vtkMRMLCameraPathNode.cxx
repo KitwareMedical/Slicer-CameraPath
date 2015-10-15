@@ -11,8 +11,9 @@
 
 // STD includes
 #include <sstream>
-#include <pair>
+#include <utility>
 #include <vector>
+#include <algorithm>
 
 
 //------------------------------------------------------------------------------
@@ -21,7 +22,6 @@
 //----------------------------------------------------------------------------
 struct timeSort
 {
-    timeSort() : { }
     bool operator ()(const vtkMRMLCameraPathNode::KeyFrameType& firstElem,
                      const vtkMRMLCameraPathNode::KeyFrameType& secondElem)
       {
@@ -51,7 +51,7 @@ public:
   ~vtkInternal();
 
   int PathStatus;
-  KeyFramesType KeyFrames;
+  vtkMRMLCameraPathNode::KeyFramesType KeyFrames;
   vtkSmartPointer<vtkMRMLPointSplineNode> Positions;
   vtkSmartPointer<vtkMRMLPointSplineNode> FocalPoints;
   vtkSmartPointer<vtkMRMLPointSplineNode> ViewUps;
@@ -64,7 +64,6 @@ vtkMRMLCameraPathNode::vtkInternal::vtkInternal(
     vtkMRMLCameraPathNode* external):External(external)
 {
   this->PathStatus = PATH_NOT_CREATED;
-//  this->KeyFrames = new KeyFramesType;
   this->Positions = vtkSmartPointer<vtkMRMLPointSplineNode>::New();
   this->FocalPoints = vtkSmartPointer<vtkMRMLPointSplineNode>::New();
   this->ViewUps = vtkSmartPointer<vtkMRMLPointSplineNode>::New();
@@ -74,7 +73,7 @@ vtkMRMLCameraPathNode::vtkInternal::vtkInternal(
 vtkMRMLCameraPathNode::vtkInternal::~vtkInternal()
 {
   this->PathStatus = PATH_NOT_CREATED;
-  delete this->KeyFrames;
+    // TODO : delete cameras in list ?
 }
 
 //------------------------------------------------------------------------------
@@ -118,9 +117,9 @@ void vtkMRMLCameraPathNode::Copy(vtkMRMLNode *anode)
 
   PathStatus = node->GetPathStatus();
   KeyFrames = node->GetKeyFrames; // TODO : Deep Copy of cameras?
-  Positions->DeepCopy(node->GetPositionSplines());
-  FocalPoints->DeepCopy(node->GetFocalPointSplines());
-  ViewUps->DeepCopy(node->GetViewUpSplines());
+  Positions->Copy(node->GetPositionSplines());
+  FocalPoints->Copy(node->GetFocalPointSplines());
+  ViewUps->Copy(node->GetViewUpSplines());
   
   this->SetKeyFrames(KeyFrames);
   this->SetPointSplines(Positions.GetPointer(),
@@ -140,12 +139,6 @@ void vtkMRMLCameraPathNode::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "MinimumT: " << this->GetMinimumT() << "\n";
   os << indent << "MaximumT: " << this->GetMaximumT() << "\n";
 }
-
-//----------------------------------------------------------------------------
-//vtkMRMLStorageNode* vtkMRMLCameraPathNode::CreateDefaultStorageNode()
-//{
-//  return vtkMRMLCameraPathStorageNode::New();
-//}
 
 //----------------------------------------------------------------------------
 int vtkMRMLCameraPathNode::GetPathStatus()
@@ -171,27 +164,27 @@ void vtkMRMLCameraPathNode::SetPathChanged()
 //----------------------------------------------------------------------------
 vtkIdType vtkMRMLCameraPathNode::GetNumberOfKeyFrames()
 {
-  return this->GetKeyFrames.size();
+  return this->GetKeyFrames().size();
 }
 
 //----------------------------------------------------------------------------
 double vtkMRMLCameraPathNode::GetMinimumT()
 {
-  if(this->GetKeyFrames.empty())
+  if(this->GetKeyFrames().empty())
     {
     return -VTK_FLOAT_MAX;
     }
-  return this->GetKeyFrames.front().second;
+  return this->GetKeyFrames().front().second;
 }
 
 //----------------------------------------------------------------------------
 double vtkMRMLCameraPathNode::GetMaximumT()
 {
-  if(this->GetKeyFrames.empty())
+  if(this->GetKeyFrames().empty())
     {
     return VTK_FLOAT_MAX;
     }
-  return this->GetKeyFrames.back().second;
+  return this->GetKeyFrames().back().second;
 }
 
 //----------------------------------------------------------------------------
@@ -206,7 +199,9 @@ vtkMRMLCameraPathNode::GetKeyFrame(vtkIdType index)
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
-    return;
+    vtkErrorMacro("No keyframes.");
+    KeyFrameType empty(0,0);
+    return empty;
     }
   return this->GetKeyFrames().at(index);
 }
@@ -217,7 +212,7 @@ double vtkMRMLCameraPathNode::GetKeyFrameTime(vtkIdType index)
   return this->GetKeyFrame(index).second;
 }
 
-//----------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 vtkMRMLCameraNode* vtkMRMLCameraPathNode::GetKeyFrameCamera(vtkIdType index)
 {
   return this->GetKeyFrame(index).first;
@@ -276,7 +271,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameTime(vtkIdType index, double time)
     {
     return;
     }
-  if( this->GetKeyFrameTime(index) == keyFrame.second)
+  if( this->GetKeyFrameTime(index) == time)
     {
     return;
     }
@@ -293,7 +288,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameCamera(vtkIdType index,
     {
     return;
     }
-  if( this->GetKeyFrameCamera(index) == keyFrame.first)
+  if( this->GetKeyFrameCamera(index) == camera)
     {
     return;
     }
@@ -313,7 +308,7 @@ void vtkMRMLCameraPathNode::SetKeyFramePosition(vtkIdType index,
   this->GetKeyFramePosition(index, testPos);
   if( testPos[0] == position[0] &&
           testPos[1] == position[1] &&
-          testPos[2] == position[2] &&)
+          testPos[2] == position[2])
     {
     return;
     }
@@ -333,7 +328,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameFocalPoint(vtkIdType index,
   this->GetKeyFrameFocalPoint(index, testFoc);
   if( testFoc[0] == focalPoint[0] &&
           testFoc[1] == focalPoint[1] &&
-          testFoc[2] == focalPoint[2] &&)
+          testFoc[2] == focalPoint[2])
     {
     return;
     }
@@ -353,7 +348,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameViewUp(vtkIdType index,
   this->GetKeyFrameViewUp(index, testView);
   if( testView[0] == viewUp[0] &&
           testView[1] == viewUp[1] &&
-          testView[2] == viewUp[2] &&)
+          testView[2] == viewUp[2])
     {
     return;
     }
@@ -364,7 +359,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameViewUp(vtkIdType index,
 //---------------------------------------------------------------------------
 void vtkMRMLCameraPathNode::AddKeyFrame(KeyFrameType keyFrame)
 {
-  t = keyFrame.second;
+  double t = keyFrame.second;
   KeyFramesType::iterator it = find_if(this->Internal->KeyFrames.begin(),
                                        this->Internal->KeyFrames.end(),
                                        timeEqual(t));
@@ -400,7 +395,7 @@ void vtkMRMLCameraPathNode::AddKeyFrame(double t,
   camera->SetPosition(position);
   camera->SetFocalPoint(focalPoint);
   camera->SetViewUp(viewUp);
-  this->AddKeyFrame(t, camera);
+  this->AddKeyFrame(t, camera.GetPointer());
 }
 
 //---------------------------------------------------------------------------
@@ -410,7 +405,7 @@ void vtkMRMLCameraPathNode::RemoveKeyFrame(vtkIdType index)
     {
     return;
     }
-  this->Internal->KeyFrames.vec.erase(
+  this->Internal->KeyFrames.erase(
               this->Internal->KeyFrames.begin() + index);
 }
 
@@ -428,7 +423,7 @@ void vtkMRMLCameraPathNode::SortKeyFrames()
 //----------------------------------------------------------------------------
 void vtkMRMLCameraPathNode::CreatePath()
 {
-  if(this->GetKeyFrames.empty())
+  if(this->GetKeyFrames().empty())
     {
     return;
     }
@@ -440,7 +435,8 @@ void vtkMRMLCameraPathNode::CreatePath()
   this->GetFocalPointSplines()->Initialize(min, max);
   this->GetViewUpSplines()->Initialize(min, max);
 
-  for( vtkIdType i; i < numPts; ++i)
+  vtkIdType numPts = this->GetNumberOfKeyFrames();
+  for( vtkIdType i = 0; i < numPts; ++i)
     {
     double position[3], focalPoint[3], viewUp[3];
     this->GetKeyFramePosition(i, position);
@@ -506,7 +502,7 @@ void vtkMRMLCameraPathNode::GetPositionAt(double t, double position[3])
     return;
     }
   t = this->ClampTime(t);
-  this->GetPositionSplines->Evaluate(t, position);
+  this->GetPositionSplines()->Evaluate(t, position);
 }
 
 //---------------------------------------------------------------------------
@@ -517,7 +513,7 @@ void vtkMRMLCameraPathNode::GetFocalPointAt(double t, double focalPoint[3])
     return;
     }
   t = this->ClampTime(t);
-  this->GetFocalPointSplines->Evaluate(t, focalPoint);
+  this->GetFocalPointSplines()->Evaluate(t, focalPoint);
 }
 
 //---------------------------------------------------------------------------
@@ -543,23 +539,4 @@ double vtkMRMLCameraPathNode::ClampTime(double t)
     t = this->GetMaximumT();
     }
   return t;
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLCameraPathNode::OnNodeReferenceAdded(vtkMRMLNodeReference *reference)
-{
-  if (std::string(reference->GetReferenceRole()) == this->DisplayNodeReferenceRole)
-    {
-    this->Internal->UpdateDisplayNode(
-          vtkMRMLDisplayNode::SafeDownCast(reference->GetReferencedNode()));
-    }
-  this->Superclass::OnNodeReferenceAdded(reference);
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLCameraPathNode::OnNodeReferenceModified(vtkMRMLNodeReference *reference)
-{
-  this->Internal->UpdateDisplayNode(
-        vtkMRMLDisplayNode::SafeDownCast(reference->GetReferencedNode()));
-  this->Superclass::OnNodeReferenceModified(reference);
 }

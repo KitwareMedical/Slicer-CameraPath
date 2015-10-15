@@ -7,7 +7,7 @@
 //class vtkMRMLStorageNode;
 
 // VTK includes
-class splineType;
+class vtkKochanekSpline;
 class vtkPolyData;
 class vtkAlgorithmOutput;
 
@@ -75,7 +75,6 @@ protected:
   virtual void OnNodeReferenceModified(vtkMRMLNodeReference *reference);
 
   /// Update polydata
-  void UpdatePolyData();
 #if (VTK_MAJOR_VERSION > 5)
   void SetPolyDataConnection(vtkAlgorithmOutput *inputPort);
 #endif
