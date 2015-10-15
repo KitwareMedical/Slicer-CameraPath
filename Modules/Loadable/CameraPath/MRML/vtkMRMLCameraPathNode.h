@@ -131,7 +131,7 @@ public:
                        vtkMRMLPointSplineNode* focalPoints,
                        vtkMRMLPointSplineNode* viewUps);
 
-  void GetCameraInfo(double t, vtkMRMLCameraNode* camera);
+  void GetCameraAt(double t, vtkMRMLCameraNode* camera);
   void GetPositionAt(double t, double position[3] = 0);
   void GetFocalPointAt(double t, double focalPoint[3] = 0);
   void GetViewUpAt(double t, double viewUp[3] = 0);

@@ -480,7 +480,7 @@ void vtkMRMLCameraPathNode::SetPointSplines(vtkMRMLPointSplineNode* positions,
 }
 
 //---------------------------------------------------------------------------
-void vtkMRMLCameraPathNode::GetCameraInfo(double t,
+void vtkMRMLCameraPathNode::GetCameraAt(double t,
 					  vtkMRMLCameraNode* camera)
 {
   if ( this->GetPathStatus() == PATH_NOT_CREATED )
@@ -491,9 +491,9 @@ void vtkMRMLCameraPathNode::GetCameraInfo(double t,
   this->GetPositionAt(t, position);
   this->GetFocalPointAt(t, focalPoint);
   this->GetViewUpAt(t, viewUp);
-  camera->GetPosition(position);
-  camera->GetFocalPoint(focalPoint);
-  camera->GetViewUp(viewUp);
+  camera->SetPosition(position);
+  camera->SetFocalPoint(focalPoint);
+  camera->SetViewUp(viewUp);
 }
 
 //---------------------------------------------------------------------------
