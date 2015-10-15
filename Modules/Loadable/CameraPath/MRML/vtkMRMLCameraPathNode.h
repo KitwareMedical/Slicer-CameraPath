@@ -6,7 +6,7 @@
 #include "vtkMRMLPointSplineNode.h"
 #include <vtkMRMLCameraNode.h>
 #include <vtkMRMLTransformableNode.h>
-//class vtkMRMLStorageNode;
+class vtkMRMLStorageNode;
 
 // STD includes
 #include <utility>
@@ -68,7 +68,7 @@ public:
         PATH_UP_TO_DATE};
 
   static vtkMRMLCameraPathNode *New();
-  vtkTypeMacro(vtkMRMLCameraPathNode,vtkMRMLTransformableNode);
+  vtkTypeMacro(vtkMRMLCameraPathNode,vtkMRMLTransformableNode)
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   //--------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public:
 
   /// Create default camera path storage node
   /// \sa vtkMRMLCameraPathStorageNode
-//  virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
+  //virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
   //--------------------------------------------------------------------------
   /// CameraPath methods

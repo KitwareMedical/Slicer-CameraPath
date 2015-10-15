@@ -3,11 +3,12 @@
 #include "vtkMRMLScene.h"
 #include "vtkMRMLCameraNode.h"
 #include "vtkMRMLCameraPathNode.h"
+#include "vtkMRMLPointSplineNode.h"
 //#include "vtkMRMLCameraPathStorageNode.h"
 
 // VTK includes
-#include <vtkMRMLPointSplineNode.h>
 #include <vtkNew.h>
+#include <vtkObjectFactory.h>
 
 // STD includes
 #include <sstream>
@@ -62,7 +63,7 @@ vtkMRMLCameraPathNode::vtkInternal::~vtkInternal()
 // vtkMRMLCameraPathNode
 
 //------------------------------------------------------------------------------
-vtkMRMLNodeNewMacro(vtkMRMLCameraPathNode);
+vtkMRMLNodeNewMacro(vtkMRMLCameraPathNode)
 
 //----------------------------------------------------------------------------
 vtkMRMLCameraPathNode::vtkMRMLCameraPathNode()
