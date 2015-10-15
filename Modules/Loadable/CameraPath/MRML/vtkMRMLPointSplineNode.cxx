@@ -11,6 +11,7 @@
 #include <vtkSplineRepresentation.h>
 #include <vtkCommand.h>
 #include <vtkNew.h>
+#include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #if (VTK_MAJOR_VERSION > 5)
 #include <vtkAlgorithmOutput.h>

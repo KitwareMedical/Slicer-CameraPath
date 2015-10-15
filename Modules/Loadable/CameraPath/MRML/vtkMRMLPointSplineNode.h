@@ -4,11 +4,10 @@
 // MRML includes
 #include "vtkSlicerCameraPathModuleMRMLExport.h"
 #include <vtkMRMLDisplayableNode.h>
-//class vtkMRMLStorageNode;
+class vtkMRMLStorageNode;
 
 // VTK includes
 class vtkKochanekSpline;
-class vtkPolyData;
 class vtkAlgorithmOutput;
 
 /// \brief MRML node to hold the information about a 3D spline.
@@ -21,7 +20,7 @@ public:
   typedef vtkKochanekSpline splineType;
 
   static vtkMRMLPointSplineNode *New();
-  vtkTypeMacro(vtkMRMLPointSplineNode,vtkMRMLDisplayableNode);
+  vtkTypeMacro(vtkMRMLPointSplineNode,vtkMRMLDisplayableNode)
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   //--------------------------------------------------------------------------
@@ -38,10 +37,6 @@ public:
   /// Create and observe default camera path display node
   /// \sa vtkMRMLPointSplineDisplayNode
   void CreateDefaultDisplayNodes();
-
-  /// Create default camera path storage node
-  /// \sa vtkMRMLPointSplineStorageNode
-  //virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
   //--------------------------------------------------------------------------
   /// PointSpline methods
@@ -74,7 +69,6 @@ protected:
   /// Called when a node reference ID is modified.
   virtual void OnNodeReferenceModified(vtkMRMLNodeReference *reference);
 
-  /// Update polydata
 #if (VTK_MAJOR_VERSION > 5)
   void SetPolyDataConnection(vtkAlgorithmOutput *inputPort);
 #endif
