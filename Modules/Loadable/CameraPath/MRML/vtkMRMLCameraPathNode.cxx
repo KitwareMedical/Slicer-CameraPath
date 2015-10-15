@@ -435,13 +435,14 @@ void vtkMRMLCameraPathNode::CreatePath()
   for( vtkIdType i = 0; i < numPts; ++i)
     {
     double position[3], focalPoint[3], viewUp[3];
+    double t = this->GetKeyFrameTime(i);
     this->GetKeyFramePosition(i, position);
     this->GetKeyFrameFocalPoint(i, focalPoint);
     this->GetKeyFrameViewUp(i, viewUp);
 
-    this->GetPositionSplines()->AddPoint(i, position);
-    this->GetFocalPointSplines()->AddPoint(i, focalPoint);
-    this->GetViewUpSplines()->AddPoint(i, viewUp);
+    this->GetPositionSplines()->AddPoint(t, position);
+    this->GetFocalPointSplines()->AddPoint(t, focalPoint);
+    this->GetViewUpSplines()->AddPoint(t, viewUp);
     }
 }
 
