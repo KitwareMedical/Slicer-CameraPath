@@ -9,7 +9,7 @@
 //class vtkMRMLStorageNode;
 
 // STD includes
-#include <pair>
+#include <utility>
 #include <vector>
 
 /// \brief MRML node to hold the information about a camera path.
@@ -104,12 +104,6 @@ protected:
 
   void SetPathStatus(int status);
   void SetPathChanged();
-
-  /// Called when a node reference ID is added (list size increased).
-  virtual void OnNodeReferenceAdded(vtkMRMLNodeReference *reference);
-
-  /// Called when a node reference ID is modified.
-  virtual void OnNodeReferenceModified(vtkMRMLNodeReference *reference);
 
   class vtkInternal;
   vtkInternal* Internal;

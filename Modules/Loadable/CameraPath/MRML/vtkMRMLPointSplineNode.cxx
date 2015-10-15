@@ -116,7 +116,7 @@ void vtkMRMLPointSplineNode::vtkInternal
 // vtkMRMLPointSplineNode
 
 //------------------------------------------------------------------------------
-vtkMRMLNodeNewMacro(vtkMRMLPointSplineNode);
+vtkMRMLNodeNewMacro(vtkMRMLPointSplineNode)
 
 //----------------------------------------------------------------------------
 vtkMRMLPointSplineNode::vtkMRMLPointSplineNode()
@@ -166,11 +166,11 @@ void vtkMRMLPointSplineNode::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os,indent);
 
 
-  os << indent << "NumberOfPoints: " <<
-        this->GetXSpline()->GetNumberOfPoints();() << "\n";
-  os << indent << "ParametricRange: [ " <<
-        this->GetMinimumT() << ", "<<
-        this->GetMaximumT() << "] \n";
+  os << indent << "NumberOfPoints: "
+     << this->GetXSpline()->GetNumberOfPoints() << "\n";
+  os << indent << "ParametricRange: [ "
+     << this->GetMinimumT() << ", "
+     << this->GetMaximumT() << "] \n";
 }
 
 //----------------------------------------------------------------------------
@@ -210,19 +210,19 @@ double vtkMRMLPointSplineNode::GetMaximumT()
 }
 
 //----------------------------------------------------------------------------
-splineType* vtkMRMLPointSplineNode::GetXSpline()
+vtkMRMLPointSplineNode::splineType* vtkMRMLPointSplineNode::GetXSpline()
 {
   return this->Internal->XSpline;
 }
 
 //----------------------------------------------------------------------------
-splineType* vtkMRMLPointSplineNode::GetYSpline()
+vtkMRMLPointSplineNode::splineType* vtkMRMLPointSplineNode::GetYSpline()
 {
     return this->Internal->YSpline;
 }
 
 //----------------------------------------------------------------------------
-splineType* vtkMRMLPointSplineNode::GetZSpline()
+vtkMRMLPointSplineNode::splineType* vtkMRMLPointSplineNode::GetZSpline()
 {
     return this->Internal->ZSpline;
 }
@@ -239,7 +239,9 @@ void vtkMRMLPointSplineNode::SetSplines(splineType* xSpline,
 
   this->UpdatePolyData();
 }
-void vtkMRMLPointSplineNode::UpdatePolydata()
+
+//----------------------------------------------------------------------------
+void vtkMRMLPointSplineNode::UpdatePolyData()
 {
   vtkNew<vtkParametricSpline> parametricSpline;
   parametricSpline->SetXSpline(this->GetXSpline());
@@ -247,10 +249,10 @@ void vtkMRMLPointSplineNode::UpdatePolydata()
   parametricSpline->SetZSpline(this->GetZSpline());
 
   vtkNew<vtkSplineRepresentation> splineRepresentation;
-  splineRepresentation->SetParametricSpline(parametricSpline->GetPointer());
+  splineRepresentation->SetParametricSpline(parametricSpline.GetPointer());
 
   vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-  splineRepresentation->GetPolyData(polydata);
+  splineRepresentation->GetPolyData(polyData);
 
 #if (VTK_MAJOR_VERSION <= 5)
   vtkSmartPointer<vtkPolyData> oldPolyData = this->Internal->PolyData;
@@ -315,7 +317,7 @@ void vtkMRMLPointSplineNode::Initialize(double min, double max)
   if ( !this->GetXSpline() || !this->GetYSpline() || !this->GetZSpline() )
     {
     vtkErrorMacro("Please specify splines");
-    return 0;
+    return;
     }
 
   this->GetXSpline()->RemoveAllPoints();
@@ -335,17 +337,17 @@ void vtkMRMLPointSplineNode::AddPoint(double t, double point[3])
   if ( !this->GetXSpline() || !this->GetYSpline() || !this->GetZSpline() )
     {
     vtkErrorMacro("Please specify splines");
-    return 0;
+    return;
     }
   if ( !point )
     {
     vtkErrorMacro("No point given");
-    return 0;
+    return;
     }
   if ( t < this->GetMinimumT() || t > this->GetMaximumT() )
     {
     vtkErrorMacro("Parameter outside of parameter range");
-    return 0;
+    return;
     }
 
   this->GetXSpline()->AddPoint(t, point[0]);
@@ -356,17 +358,17 @@ void vtkMRMLPointSplineNode::AddPoint(double t, double point[3])
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::Evaluate(double t, double point[3]=0)
+void vtkMRMLPointSplineNode::Evaluate(double t, double point[3])
 {
   if ( !this->GetXSpline() || !this->GetYSpline() || !this->GetZSpline() )
     {
     vtkErrorMacro("Please specify splines");
-    return 0;
+    return;
     }
   if ( t < this->GetMinimumT() || t > this->GetMaximumT() )
     {
     vtkErrorMacro("Parameter outside of parameter range");
-    return 0;
+    return;
     }
 
   point[0] = this->GetXSpline()->Evaluate(t);
