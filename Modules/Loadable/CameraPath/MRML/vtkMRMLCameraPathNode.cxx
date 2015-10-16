@@ -118,9 +118,18 @@ void vtkMRMLCameraPathNode::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
-  os << indent << "NumberOfKeyFrames: " << this->GetNumberOfKeyFrames() << "\n";
+  double numPts = this->GetNumberOfKeyFrames();
+  os << indent << "NumberOfKeyFrames: " << numPts << "\n";
   os << indent << "MinimumT: " << this->GetMinimumT() << "\n";
   os << indent << "MaximumT: " << this->GetMaximumT() << "\n";
+
+  for( vtkIdType i = 0; i < numPts; ++i)
+    {
+      KeyFrame keyFrame = this->GetKeyFrame(i);
+      os << indent << "KeyFrame " << i << ":\n";
+      os << indent.GetNextIndent() << "Time: " << keyFrame.Time << "\n";
+      os << indent.GetNextIndent() << "Camera: " << keyFrame.Camera->GetID() << "\n";
+    }
 }
 
 //----------------------------------------------------------------------------
