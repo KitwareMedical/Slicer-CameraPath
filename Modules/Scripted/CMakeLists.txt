@@ -17,6 +17,7 @@
 #============================================================================
 
 set(modules
+  testCameraPath
   )
 
 set(${APPLICATION_NAME}_MODULES)
