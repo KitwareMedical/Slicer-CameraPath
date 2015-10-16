@@ -85,11 +85,12 @@ void vtkMRMLCameraPathNode::Copy(vtkMRMLNode *anode)
       vtkMRMLCameraPathNode::SafeDownCast(anode);
   if (!node)
     {
+    vtkErrorMacro("Node empty");
     return;
     }
 
   int disabledModify = this->StartModify();
-  
+
   this->Superclass::Copy(anode);
 
   int PathStatus;
@@ -103,7 +104,7 @@ void vtkMRMLCameraPathNode::Copy(vtkMRMLNode *anode)
   Positions->Copy(node->GetPositionSplines());
   FocalPoints->Copy(node->GetFocalPointSplines());
   ViewUps->Copy(node->GetViewUpSplines());
-  
+
   this->SetKeyFrames(KeyFrames);
   this->SetPointSplines(Positions.GetPointer(),
                         FocalPoints.GetPointer(),
@@ -164,6 +165,7 @@ double vtkMRMLCameraPathNode::GetMinimumT()
 {
   if(this->GetKeyFrames().empty())
     {
+    vtkWarningMacro("No key frames");
     return -VTK_FLOAT_MAX;
     }
   return this->GetKeyFrames().front().Time;
@@ -174,6 +176,7 @@ double vtkMRMLCameraPathNode::GetMaximumT()
 {
   if(this->GetKeyFrames().empty())
     {
+    vtkWarningMacro("No key frames");
     return VTK_FLOAT_MAX;
     }
   return this->GetKeyFrames().back().Time;
@@ -191,7 +194,7 @@ vtkMRMLCameraPathNode::GetKeyFrame(vtkIdType index)
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
-    vtkErrorMacro("No keyframes.");
+    vtkErrorMacro("No key frame at this index");
     return KeyFrame();
     }
   return this->GetKeyFrames().at(index);
@@ -252,11 +255,13 @@ void vtkMRMLCameraPathNode::SetKeyFrame(vtkIdType index, KeyFrame keyFrame)
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
+    vtkErrorMacro("No key frame at this index");
     return;
     }
 
   if( this->GetKeyFrame(index) == keyFrame)
     {
+    vtkWarningMacro("Key frame identical : no effect");
     return;
     }
 
@@ -270,11 +275,13 @@ void vtkMRMLCameraPathNode::SetKeyFrameTime(vtkIdType index, double time)
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
+    vtkErrorMacro("No key frame at this index");
     return;
     }
 
   if( this->GetKeyFrameTime(index) == time)
     {
+    vtkWarningMacro("Time identical : no effect");
     return;
     }
 
@@ -289,11 +296,13 @@ void vtkMRMLCameraPathNode::SetKeyFrameCamera(vtkIdType index,
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
+    vtkErrorMacro("No key frame at this index");
     return;
     }
 
   if( this->GetKeyFrameCamera(index) == camera)
     {
+    vtkWarningMacro("Camera identical : no effect");
     return;
     }
 
@@ -307,6 +316,7 @@ void vtkMRMLCameraPathNode::SetKeyFramePosition(vtkIdType index,
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
+    vtkErrorMacro("No key frame at this index");
     return;
     }
   double testPos[3];
@@ -315,6 +325,7 @@ void vtkMRMLCameraPathNode::SetKeyFramePosition(vtkIdType index,
           testPos[1] == position[1] &&
           testPos[2] == position[2])
     {
+    vtkWarningMacro("Position identical : no effect");
     return;
     }
   this->Internal->KeyFrames.at(index).Camera->SetPosition(position);
@@ -327,6 +338,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameFocalPoint(vtkIdType index,
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
+    vtkErrorMacro("No key frame at this index");
     return;
     }
   double testFoc[3];
@@ -335,6 +347,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameFocalPoint(vtkIdType index,
           testFoc[1] == focalPoint[1] &&
           testFoc[2] == focalPoint[2])
     {
+    vtkWarningMacro("Focal point identical : no effect");
     return;
     }
   this->Internal->KeyFrames.at(index).Camera->SetFocalPoint(focalPoint);
@@ -347,6 +360,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameViewUp(vtkIdType index,
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
+    vtkErrorMacro("No key frame at this index");
     return;
     }
   double testView[3];
@@ -355,6 +369,7 @@ void vtkMRMLCameraPathNode::SetKeyFrameViewUp(vtkIdType index,
           testView[1] == viewUp[1] &&
           testView[2] == viewUp[2])
     {
+    vtkWarningMacro("View up identical : no effect");
     return;
     }
   this->Internal->KeyFrames.at(index).Camera->SetPosition(viewUp);
@@ -371,7 +386,7 @@ void vtkMRMLCameraPathNode::AddKeyFrame(KeyFrame keyFrame)
   if (it != this->Internal->KeyFrames.end())
     {
     vtkIdType index = it - this->Internal->KeyFrames.begin();
-    std::cout << "A keyframe already exists at t = " << t << std::endl
+    std::cerr << "A keyframe already exists for t = " << t << std::endl
               << "Keyframe ID : " << index << std::endl
               << "To update it, use the methods 'SetKeyFrame(index)' instead."
               << std::endl;
@@ -414,6 +429,7 @@ void vtkMRMLCameraPathNode::RemoveKeyFrame(vtkIdType index)
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
     {
+    vtkErrorMacro("No key frame at this index");
     return;
     }
   this->Internal->KeyFrames.erase(
@@ -424,9 +440,10 @@ void vtkMRMLCameraPathNode::RemoveKeyFrame(vtkIdType index)
 void vtkMRMLCameraPathNode::SortKeyFrames()
 {
   if( this->GetNumberOfKeyFrames() < 2)
-  {
+    {
+    vtkWarningMacro("No need to sort : there is less than two key frames");
     return;
-  }
+    }
   std::sort(this->Internal->KeyFrames.begin(),
             this->Internal->KeyFrames.end());
 }
@@ -436,6 +453,7 @@ void vtkMRMLCameraPathNode::CreatePath()
 {
   if(this->GetKeyFrames().empty())
     {
+    vtkErrorMacro("No key frames to create a path");
     return;
     }
 
@@ -493,10 +511,11 @@ void vtkMRMLCameraPathNode::SetPointSplines(vtkMRMLPointSplineNode* positions,
 
 //---------------------------------------------------------------------------
 void vtkMRMLCameraPathNode::GetCameraAt(double t,
-					  vtkMRMLCameraNode* camera)
+                      vtkMRMLCameraNode* camera)
 {
   if ( this->GetPathStatus() == PATH_NOT_CREATED )
     {
+    vtkErrorMacro("Path not created, use 'CreatePath' beforehand");
     return;
     }
   double position[3], focalPoint[3], viewUp[3];
@@ -513,6 +532,7 @@ void vtkMRMLCameraPathNode::GetPositionAt(double t, double position[3])
 {
   if ( this->GetPathStatus() == PATH_NOT_CREATED )
     {
+    vtkErrorMacro("Path not created, use 'CreatePath' beforehand");
     return;
     }
   t = this->ClampTime(t);
@@ -524,6 +544,7 @@ void vtkMRMLCameraPathNode::GetFocalPointAt(double t, double focalPoint[3])
 {
   if ( this->GetPathStatus() == PATH_NOT_CREATED )
     {
+    vtkErrorMacro("Path not created, use 'CreatePath' beforehand");
     return;
     }
   t = this->ClampTime(t);
@@ -535,6 +556,7 @@ void vtkMRMLCameraPathNode::GetViewUpAt(double t, double viewUp[3])
 {
   if ( this->GetPathStatus() == PATH_NOT_CREATED )
     {
+    vtkErrorMacro("Path not created, use 'CreatePath' beforehand");
     return;
     }
   this->ClampTime(t);
