@@ -139,6 +139,7 @@ void vtkMRMLPointSplineNode::Copy(vtkMRMLNode *anode)
       vtkMRMLPointSplineNode::SafeDownCast(anode);
   if (!node)
     {
+    vtkErrorMacro("Node empty");
     return;
     }
 
@@ -219,13 +220,13 @@ vtkMRMLPointSplineNode::splineType* vtkMRMLPointSplineNode::GetXSpline()
 //----------------------------------------------------------------------------
 vtkMRMLPointSplineNode::splineType* vtkMRMLPointSplineNode::GetYSpline()
 {
-    return this->Internal->YSpline;
+  return this->Internal->YSpline;
 }
 
 //----------------------------------------------------------------------------
 vtkMRMLPointSplineNode::splineType* vtkMRMLPointSplineNode::GetZSpline()
 {
-    return this->Internal->ZSpline;
+  return this->Internal->ZSpline;
 }
 
 //----------------------------------------------------------------------------
