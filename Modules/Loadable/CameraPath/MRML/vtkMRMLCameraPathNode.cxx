@@ -460,9 +460,6 @@ void vtkMRMLCameraPathNode::CreatePath()
     this->GetViewUpSplines()->AddPoint(t, viewUp);
     }
 
-  this->GetPositionSplines()->UpdatePolyData();
-  this->GetFocalPointSplines()->UpdatePolyData();
-
   this->SetPathStatus(PATH_UP_TO_DATE);
 }
 

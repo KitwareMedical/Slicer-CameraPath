@@ -328,8 +328,6 @@ void vtkMRMLPointSplineNode::Initialize(double min, double max)
   this->GetXSpline()->SetParametricRange(min, max);
   this->GetYSpline()->SetParametricRange(min, max);
   this->GetZSpline()->SetParametricRange(min, max);
-
-  // this->UpdatePolyData();
 }
 
 //----------------------------------------------------------------------------
@@ -354,8 +352,6 @@ void vtkMRMLPointSplineNode::AddPoint(double t, double point[3])
   this->GetXSpline()->AddPoint(t, point[0]);
   this->GetYSpline()->AddPoint(t, point[1]);
   this->GetZSpline()->AddPoint(t, point[2]);
-
-  // this->UpdatePolyData();
 }
 
 //----------------------------------------------------------------------------
