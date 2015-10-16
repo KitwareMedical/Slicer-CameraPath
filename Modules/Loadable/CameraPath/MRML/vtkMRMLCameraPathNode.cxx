@@ -404,6 +404,12 @@ void vtkMRMLCameraPathNode::AddKeyFrame(double t,
 }
 
 //---------------------------------------------------------------------------
+void vtkMRMLCameraPathNode::RemoveKeyFrames()
+{
+  this->Internal->KeyFrames.clear();
+}
+
+//---------------------------------------------------------------------------
 void vtkMRMLCameraPathNode::RemoveKeyFrame(vtkIdType index)
 {
   if( index < 0 || index >= this->GetNumberOfKeyFrames() )
