@@ -6,22 +6,739 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>525</width>
-    <height>319</height>
+    <width>467</width>
+    <height>693</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <property name="minimumSize">
+   <size>
+    <width>360</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Camera Path Module</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="ctkCollapsibleButton" name="CTKCollapsibleButton" native="true">
-     <property name="text" stdset="0">
-      <string>Display</string>
+    <widget class="ctkCollapsibleButton" name="flyThroughCollapsibleButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="text" stdset="0">
+      <string>Flythrough</string>
+     </property>
+     <property name="collapsed" stdset="0">
+      <bool>false</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="defaultCameraLabel">
+        <property name="text">
+         <string>Camera :</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="qMRMLNodeComboBox" name="defaultCameraComboBox" native="true">
+        <property name="toolTip">
+         <string>Select or create a camera</string>
+        </property>
+        <property name="nodeTypes" stdset="0">
+         <stringlist>
+          <string>vtkMRMLCameraNode</string>
+         </stringlist>
+        </property>
+        <property name="baseName" stdset="0">
+         <string>F</string>
+        </property>
+        <property name="addEnabled" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="renameEnabled" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="cameraPathLabel">
+        <property name="text">
+         <string>CameraPath :</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="qMRMLNodeComboBox" name="cameraPathComboBox" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Select or create a camera path</string>
+          </property>
+          <property name="nodeTypes" stdset="0">
+           <stringlist>
+            <string>vtkMRMLCameraPathNode</string>
+           </stringlist>
+          </property>
+          <property name="baseName" stdset="0">
+           <string>F</string>
+          </property>
+          <property name="addEnabled" stdset="0">
+           <bool>true</bool>
+          </property>
+          <property name="renameEnabled" stdset="0">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="cameraPathVisibilityPushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>30</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Toggle the camera path visibility.</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../../../../../debug-iVSPlan/Slicer/Libs/MRML/Widgets/Resources/qMRMLWidgets.qrc">
+            <normaloff>:/Icons/VisibleOn.png</normaloff>
+            <normalon>:/Icons/VisibleOff.png</normalon>:/Icons/VisibleOn.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="timeLabel">
+        <property name="text">
+         <string>Time :</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QSlider" name="horizontalSlider">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::NoTicks</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="timeValueLabel">
+          <property name="text">
+           <string>-</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="timeUnitLabel">
+          <property name="text">
+           <string>s</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="firstFramePushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>38</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Go to the first frame.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/Player/FirstFrame.png</normaloff>:/Icons/Player/FirstFrame.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="previousFramePushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>38</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Go to the previous frame.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/Player/PreviousFrame.png</normaloff>:/Icons/Player/PreviousFrame.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="playPushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>38</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Play frames at the chosen framerate/ Pause.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/Player/Play.png</normaloff>
+            <normalon>:/Icons/Player/Pause.png</normalon>:/Icons/Player/Play.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="nextFramePushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>38</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Go to the next frame.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/Player/NextFrame.png</normaloff>:/Icons/Player/NextFrame.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="lastFramePushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>38</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Go to the last frame.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/Player/LastFrame.png</normaloff>:/Icons/Player/LastFrame.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="fpsSpinBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>52</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Framerate at which the path is played.</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+          <property name="value">
+           <number>30</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="fpsLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>20</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>fps</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="keyFramesCollapsibleButton">
+     <property name="text" stdset="0">
+      <string>Key Frames</string>
+     </property>
+     <property name="collapsed" stdset="0">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="qSlicerCameraPathFooBarWidget" name="FooBar" native="true"/>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="deleteAllPushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Remove all key frames from the list.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/DeleteAll.png</normaloff>:/Icons/DeleteAll.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="deleteSelectedPushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Delete the highlighted key frame from the list.</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/DeleteSelected.png</normaloff>:/Icons/DeleteSelected.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="goToKeyFramePushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Go to selected key frame camera.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/GoToCamera.png</normaloff>:/Icons/GoToCamera.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="updateKeyFramePushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Update key frame at current camera position.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/UpdateCamera.png</normaloff>:/Icons/UpdateCamera.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="addKeyFramePushButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Add key frame at current camera position.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
+            <normaloff>:/Icons/AddCamera.png</normaloff>:/Icons/AddCamera.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="keyFramesTableWidget">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>200</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>The key frames defining the camera path. Press 'Compute Camera Path' below to update the path after you edit the key frames list.</string>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string/>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Time</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Lock</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Display</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Camera</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="computeCameraPathpushButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Recomputes the camera path from the key frames list.</string>
+        </property>
+        <property name="text">
+         <string>Compute Camera Path</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="SelectedKeyFrameCollapsibleButton">
+     <property name="text" stdset="0">
+      <string>Selected Key Frame</string>
+     </property>
+     <property name="collapsed" stdset="0">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="selectedCameraIDLabel">
+          <property name="text">
+           <string>Camera ID :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="selectedCameraIDLineEdit">
+          <property name="text">
+           <string>no key frame selected</string>
+          </property>
+          <property name="frame">
+           <bool>true</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="cameraTableWidget">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>118</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>118</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Camera Information.</string>
+        </property>
+        <property name="accessibleName">
+         <string>active markup table</string>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="verticalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <row>
+         <property name="text">
+          <string>Position</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Focal Point</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>View Up</string>
+         </property>
+        </row>
+        <column>
+         <property name="text">
+          <string>X</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Y</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Z</string>
+         </property>
+        </column>
+        <item row="0" column="2">
+         <property name="text">
+          <string/>
+         </property>
+        </item>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -33,8 +750,8 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>0</width>
-       <height>0</height>
+       <width>20</width>
+       <height>42</height>
       </size>
      </property>
     </spacer>
@@ -43,6 +760,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>qMRMLNodeComboBox</class>
+   <extends>QWidget</extends>
+   <header>qMRMLNodeComboBox.h</header>
+  </customwidget>
+  <customwidget>
    <class>qSlicerWidget</class>
    <extends>QWidget</extends>
    <header>qSlicerWidget.h</header>
@@ -50,17 +772,47 @@
   </customwidget>
   <customwidget>
    <class>ctkCollapsibleButton</class>
-   <extends>QWidget</extends>
+   <extends>QGroupBox</extends>
    <header>ctkCollapsibleButton.h</header>
    <container>1</container>
   </customwidget>
-  <customwidget>
-   <class>qSlicerCameraPathFooBarWidget</class>
-   <extends>QWidget</extends>
-   <header>qSlicerCameraPathFooBarWidget.h</header>
-   <container>1</container>
-  </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources>
+  <include location="../qSlicerCameraPathModule.qrc"/>
+  <include location="../../../../../../debug-iVSPlan/Slicer/Libs/MRML/Widgets/Resources/qMRMLWidgets.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>qSlicerCameraPathModuleWidget</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>defaultCameraComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>143</x>
+     <y>50</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerCameraPathModuleWidget</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>cameraPathComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>144</x>
+     <y>78</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

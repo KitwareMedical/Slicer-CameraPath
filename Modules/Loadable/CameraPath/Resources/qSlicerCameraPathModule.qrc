@@ -1,5 +1,20 @@
-<!DOCTYPE RCC><RCC version="1.0">
-  <qresource>
-    <file>Icons/CameraPath.png</file>
-  </qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>Icons/Delete.png</file>
+        <file>Icons/DeleteAll.png</file>
+        <file>Icons/DeleteSelected.png</file>
+        <file>Icons/Selected.png</file>
+        <file>Icons/Unselected.png</file>
+        <file>Icons/CameraPath.png</file>
+        <file>Icons/Player/Play.png</file>
+        <file>Icons/Player/Pause.png</file>
+        <file>Icons/Player/NextFrame.png</file>
+        <file>Icons/Player/LastFrame.png</file>
+        <file>Icons/Player/FirstFrame.png</file>
+        <file>Icons/Player/PreviousFrame.png</file>
+        <file>Icons/UpdateCamera.png</file>
+        <file>Icons/keyFrame.png</file>
+        <file>Icons/GoToCamera.png</file>
+        <file>Icons/AddCamera.png</file>
+    </qresource>
 </RCC>
