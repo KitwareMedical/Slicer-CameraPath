@@ -3,24 +3,24 @@
 
 // MRML includes
 #include "vtkSlicerCameraPathModuleMRMLExport.h"
-#include <vtkMRMLDisplayableNode.h>
+#include <vtkMRMLModelNode.h>
 class vtkMRMLStorageNode;
 
 // VTK includes
-class vtkKochanekSpline;
+#include <vtkKochanekSpline.h>
 class vtkAlgorithmOutput;
 
 /// \brief MRML node to hold the information about a 3D spline.
 ///
 class VTK_SLICER_CAMERAPATH_MODULE_MRML_EXPORT vtkMRMLPointSplineNode :
-    public vtkMRMLDisplayableNode
+    public vtkMRMLModelNode
 {
 public:
   typedef vtkMRMLPointSplineNode Self;
   typedef vtkKochanekSpline splineType;
 
   static vtkMRMLPointSplineNode *New();
-  vtkTypeMacro(vtkMRMLPointSplineNode,vtkMRMLDisplayableNode)
+  vtkTypeMacro(vtkMRMLPointSplineNode,vtkMRMLModelNode)
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   //--------------------------------------------------------------------------
@@ -54,7 +54,7 @@ public:
 
   void Initialize(double min, double max); // RemoveAllPoints and SetParametricRange
   void AddPoint(double t, double point[3]);
-  void UpdatePolyData();
+  void UpdatePolyData(int framerate);
   void Evaluate(double t, double point[3]=0);
 
 protected:
@@ -62,16 +62,6 @@ protected:
   virtual ~vtkMRMLPointSplineNode();
   vtkMRMLPointSplineNode(const vtkMRMLPointSplineNode&);
   void operator=(const vtkMRMLPointSplineNode&);
-
-  /// Called when a node reference ID is added (list size increased).
-  virtual void OnNodeReferenceAdded(vtkMRMLNodeReference *reference);
-
-  /// Called when a node reference ID is modified.
-  virtual void OnNodeReferenceModified(vtkMRMLNodeReference *reference);
-
-#if (VTK_MAJOR_VERSION > 5)
-  void SetPolyDataConnection(vtkAlgorithmOutput *inputPort);
-#endif
 
   class vtkInternal;
   vtkInternal* Internal;

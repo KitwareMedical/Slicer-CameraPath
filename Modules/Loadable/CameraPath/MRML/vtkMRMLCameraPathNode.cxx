@@ -479,6 +479,8 @@ void vtkMRMLCameraPathNode::CreatePath()
     }
 
   this->SetPathStatus(PATH_UP_TO_DATE);
+
+  this->GetPositionSplines()->UpdatePolyData(30);
 }
 
 //----------------------------------------------------------------------------

@@ -6,9 +6,6 @@
 //#include "vtkMRMLPointSplineStorageNode.h"
 
 // VTK includes
-#include <vtkKochanekSpline.h>
-#include <vtkParametricSpline.h>
-#include <vtkSplineRepresentation.h>
 #include <vtkCommand.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -30,27 +27,9 @@ public:
   vtkInternal(vtkMRMLPointSplineNode* external);
   ~vtkInternal();
 
-  /// Called when a display node is added or modified. Propagate the polydata
-  /// to the new display node.
-  void UpdateDisplayNode(vtkMRMLDisplayNode *dnode);
-
-  /// Sets the polydata to a display node
-  void SetPolyDataToDisplayNode(vtkMRMLModelDisplayNode* modelDisplayNode);
-
-  /// Sets the polydata to all the display nodes
-  void SetPolyDataToDisplayNodes();
-
   vtkSmartPointer<splineType> XSpline;
   vtkSmartPointer<splineType> YSpline;
   vtkSmartPointer<splineType> ZSpline;
-
-#if (VTK_MAJOR_VERSION <= 5)
-  /// Hold the polydata for vtkMRMLModelDisplayNode
-  vtkSmartPointer<vtkPolyData> PolyData;
-#else
-  vtkSmartPointer<vtkAlgorithmOutput> PolyDataConnection;
-  vtkSmartPointer<vtkEventForwarderCommand> DataEventForwarder;
-#endif
 
   vtkMRMLPointSplineNode* External;
 };
@@ -67,50 +46,6 @@ vtkMRMLPointSplineNode::vtkInternal::vtkInternal(
 //------------------------------------------------------------------------------
 vtkMRMLPointSplineNode::vtkInternal::~vtkInternal()
 {
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::vtkInternal::UpdateDisplayNode(
-    vtkMRMLDisplayNode *dnode)
-{
-  if (!vtkMRMLModelDisplayNode::SafeDownCast(dnode))
-    {
-    return;
-    }
-  vtkMRMLModelDisplayNode* modelDisplayNode =
-    vtkMRMLModelDisplayNode::SafeDownCast(dnode);
-  if (modelDisplayNode)
-    {
-    this->SetPolyDataToDisplayNode(modelDisplayNode);
-    return;
-    }
-}
-
-//---------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::vtkInternal
-::SetPolyDataToDisplayNode(vtkMRMLModelDisplayNode* modelDisplayNode)
-{
-#if (VTK_MAJOR_VERSION <= 5)
-  modelDisplayNode->SetInputPolyData(this->PolyData);
-#else
-  modelDisplayNode->SetInputPolyDataConnection(this->PolyDataConnection);
-#endif
-}
-
-//---------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::vtkInternal
-::SetPolyDataToDisplayNodes()
-{
-  int ndisp = this->External->GetNumberOfDisplayNodes();
-  for (int n=0; n<ndisp; n++)
-    {
-    vtkMRMLModelDisplayNode *dnode = vtkMRMLModelDisplayNode::SafeDownCast(
-      this->External->GetNthDisplayNode(n));
-    if (dnode)
-      {
-      this->SetPolyDataToDisplayNode(dnode);
-      }
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -239,78 +174,41 @@ void vtkMRMLPointSplineNode::SetSplines(splineType* xSpline,
   this->Internal->YSpline = ySpline;
   this->Internal->ZSpline = zSpline;
 
-  this->UpdatePolyData();
+  this->UpdatePolyData(30);
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::UpdatePolyData()
+void vtkMRMLPointSplineNode::UpdatePolyData(int framerate)
 {
-  vtkNew<vtkParametricSpline> parametricSpline;
-  parametricSpline->SetXSpline(this->GetXSpline());
-  parametricSpline->SetYSpline(this->GetYSpline());
-  parametricSpline->SetZSpline(this->GetZSpline());
+  double tmin = this->GetMinimumT();
+  double tmax = this->GetMaximumT();
+  int numSplinePoints = framerate * int(tmax - tmin);
 
-  vtkNew<vtkSplineRepresentation> splineRepresentation;
-  splineRepresentation->SetParametricSpline(parametricSpline.GetPointer());
-
-  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-  splineRepresentation->GetPolyData(polyData);
-
-#if (VTK_MAJOR_VERSION <= 5)
-  vtkSmartPointer<vtkPolyData> oldPolyData = this->Internal->PolyData;
-
-  this->Internal->PolyData = polyData;
-
-  if (this->Internal->PolyData != NULL)
+  vtkSmartPointer<vtkPoints> splinePoints = vtkSmartPointer<vtkPoints>::New();
+  for (int i = 0; i < numSplinePoints; ++i)
     {
-    vtkEventBroker::GetInstance()->AddObservation(
-      this->Internal->PolyData, vtkCommand::ModifiedEvent, this, this->MRMLCallbackCommand );
+    double t = (i/framerate) + tmin;
+    double pt[3];
+    this->Evaluate(t,pt);
+    splinePoints->InsertNextPoint(pt);
     }
 
-  this->Internal->SetPolyDataToDisplayNodes();
+  // Set up spline points
+  vtkSmartPointer<vtkPolyData> splinePolyData = vtkSmartPointer<vtkPolyData>::New();
+  splinePolyData->SetPoints( splinePoints );
 
-  if (oldPolyData != NULL)
-    {
-    vtkEventBroker::GetInstance()->RemoveObservations (
-      oldPolyData, vtkCommand::ModifiedEvent, this, this->MRMLCallbackCommand );
-    }
+  // Set up curves between adjacent points
+  splinePolyData->Allocate( numSplinePoints-1 );
+  for (vtkIdType i = 0; i <  numSplinePoints-1; ++i) {
+    vtkIdType ii[2];
+    ii[0] = i;
+    ii[1] = i+1;
+    splinePolyData->InsertNextCell( VTK_LINE, 2, ii );
+  }
 
-  this->StorableModifiedTime.Modified();
+  this->SetAndObservePolyData(splinePolyData);
+  this->CreateDefaultDisplayNodes();
   this->Modified();
-
-#else
-  if (polyData == 0)
-    {
-    this->SetPolyDataConnection(0);
-    }
-  else
-    {
-    vtkTrivialProducer* oldProducer = vtkTrivialProducer::SafeDownCast(
-      this->Internal->PolyDataConnection ? this->Internal->PolyDataConnection->GetProducer() : 0);
-    if (oldProducer && oldProducer->GetOutputDataObject(0) == polyData.GetPointer())
-      {
-      return;
-      }
-    else if (oldProducer && oldProducer->GetOutputDataObject(0))
-      {
-      oldProducer->GetOutputDataObject(0)->RemoveObservers(
-        vtkCommand::ModifiedEvent, this->Internal->DataEventForwarder);
-      }
-
-    vtkNew<vtkTrivialProducer> tp;
-    tp->SetOutput(polyData);
-    // Propagate ModifiedEvent onto the trivial producer to make sure
-    // PolyDataModifiedEvent is triggered.
-    if (!this->Internal->DataEventForwarder)
-      {
-      this->Internal->DataEventForwarder = vtkEventForwarderCommand::New();
-      }
-    this->Internal->DataEventForwarder->SetTarget(tp.GetPointer());
-    polyData->AddObserver(vtkCommand::ModifiedEvent, this->Internal->DataEventForwarder);
-    this->SetPolyDataConnection(tp->GetOutputPort());
-    }
-#endif
-
 }
 
 //----------------------------------------------------------------------------
@@ -372,60 +270,4 @@ void vtkMRMLPointSplineNode::Evaluate(double t, double point[3])
   point[0] = this->GetXSpline()->Evaluate(t);
   point[1] = this->GetYSpline()->Evaluate(t);
   point[2] = this->GetZSpline()->Evaluate(t);
-}
-
-#if (VTK_MAJOR_VERSION > 5)
-//--------------------------------------------------------------------------
-void vtkMRMLPointSplineNode
-::SetPolyDataConnection(vtkAlgorithmOutput *newPolyDataConnection)
-{
-  if (newPolyDataConnection == this->Internal->PolyDataConnection)
-    {
-    return;
-    }
-
-  vtkAlgorithm* oldPolyDataAlgorithm = this->Internal->PolyDataConnection ?
-    this->Internal->PolyDataConnection->GetProducer() : 0;
-
-  this->Internal->PolyDataConnection = newPolyDataConnection;
-
-  vtkAlgorithm* polyDataAlgorithm = this->Internal->PolyDataConnection ?
-    this->Internal->PolyDataConnection->GetProducer() : 0;
-  if (polyDataAlgorithm != NULL)
-    {
-    vtkEventBroker::GetInstance()->AddObservation(
-      polyDataAlgorithm, vtkCommand::ModifiedEvent, this, this->MRMLCallbackCommand );
-    }
-
-  this->Internal->SetPolyDataToDisplayNodes();
-
-  if (oldPolyDataAlgorithm != NULL)
-    {
-    vtkEventBroker::GetInstance()->RemoveObservations (
-      oldPolyDataAlgorithm, vtkCommand::ModifiedEvent, this, this->MRMLCallbackCommand );
-    }
-
-  this->StorableModifiedTime.Modified();
-  this->Modified();
-  //this->InvokeEvent( vtkMRMLModelNode::PolyDataModifiedEvent , this);
-}
-#endif
-
-//----------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::OnNodeReferenceAdded(vtkMRMLNodeReference *reference)
-{
-  if (std::string(reference->GetReferenceRole()) == this->DisplayNodeReferenceRole)
-    {
-    this->Internal->UpdateDisplayNode(
-          vtkMRMLDisplayNode::SafeDownCast(reference->GetReferencedNode()));
-    }
-  this->Superclass::OnNodeReferenceAdded(reference);
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::OnNodeReferenceModified(vtkMRMLNodeReference *reference)
-{
-  this->Internal->UpdateDisplayNode(
-        vtkMRMLDisplayNode::SafeDownCast(reference->GetReferencedNode()));
-  this->Superclass::OnNodeReferenceModified(reference);
 }
