@@ -27,6 +27,9 @@
 #include "vtkSlicerCameraPathLogic.h"
 #include "vtkMRMLCameraPathNode.h"
 
+// VTK includes
+#include "vtkNew.h"
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerCameraPathModuleWidgetPrivate: public Ui_qSlicerCameraPathModuleWidget
@@ -119,6 +122,13 @@ void qSlicerCameraPathModuleWidget::setup()
 
   this->setTimerInterval(d->fpsSpinBox->value());
   connect( d->Timer, SIGNAL(timeout()), this, SLOT(playToNextFrame()));
+
+  connect( d->deleteAllPushButton, SIGNAL(clicked()), this, SLOT(onDeleteAllClicked()) );
+  connect( d->deleteSelectedPushButton, SIGNAL(clicked()), this, SLOT(onDeleteSelectedClicked()) );
+  connect( d->goToKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onGoToKeyFrameClicked()) );
+  connect( d->updateKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onUpdateKeyFrameClicked()) );
+  connect( d->addKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onAddKeyFrameClicked()) );
+  connect( d->computeCameraPathPushButton, SIGNAL(clicked()), this, SLOT(onComputePathClicked()) );
 }
 
 //-----------------------------------------------------------------------------
@@ -267,4 +277,75 @@ void qSlicerCameraPathModuleWidget::playToNextFrame()
     d->Timer->stop();
     d->playPushButton->setChecked(false);
     }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  cameraPathNode->RemoveKeyFrames();
+
+  d->computeCameraPathPushButton->setEnabled(true);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
+{
+ //TODO
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onGoToKeyFrameClicked()
+{
+ //TODO
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
+{
+  //TODO
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  vtkMRMLCameraNode* defaultCameraNode =
+          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
+
+  vtkNew<vtkMRMLCameraNode> newCameraNode;
+  newCameraNode->Copy(defaultCameraNode);
+
+  double t = 0;
+  if (cameraPathNode->GetNumberOfKeyFrames() > 0)
+    {
+    t = cameraPathNode->GetMaximumT() + 2.0;
+    }
+
+  cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
+
+  d->computeCameraPathPushButton->setEnabled(true);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onComputePathClicked()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  cameraPathNode->CreatePath();
+
+  this->onCameraPathNodeChanged(cameraPathNode);
+
+  d->computeCameraPathPushButton->setEnabled(false);
 }
