@@ -17,6 +17,8 @@
 
 // CameraPath Logic includes
 #include "vtkSlicerCameraPathLogic.h"
+#include "vtkMRMLCameraPathNode.h"
+#include "vtkMRMLPointSplineNode.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
@@ -62,6 +64,11 @@ void vtkSlicerCameraPathLogic::SetMRMLSceneInternal(vtkMRMLScene * newScene)
 void vtkSlicerCameraPathLogic::RegisterNodes()
 {
   assert(this->GetMRMLScene() != 0);
+
+  vtkMRMLScene *scene = this->GetMRMLScene();
+
+  scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLCameraPathNode>::New());
+  scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLPointSplineNode>::New());
 }
 
 //---------------------------------------------------------------------------
@@ -71,13 +78,43 @@ void vtkSlicerCameraPathLogic::UpdateFromMRMLScene()
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerCameraPathLogic
-::OnMRMLSceneNodeAdded(vtkMRMLNode* vtkNotUsed(node))
+void vtkSlicerCameraPathLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
 {
+  if (node==NULL)
+  {
+    vtkErrorMacro("An invalid node is attempted to be added");
+    return;
+  }
+  if (node->IsA("vtkMRMLCameraPathNode"))
+  {
+    vtkDebugMacro("OnMRMLSceneNodeAdded: Have a vtkMRMLCameraPathNode node");
+    vtkUnObserveMRMLNodeMacro(node); // remove any previous observation that might have been added
+    vtkObserveMRMLNodeMacro(node);
+  }
+  else if (node->IsA("vtkMRMLPointSplineNode"))
+  {
+    vtkDebugMacro("OnMRMLSceneNodeAdded: Have a vtkMRMLPointSplineNode node");
+    vtkUnObserveMRMLNodeMacro(node); // remove any previous observation that might have been added
+    vtkObserveMRMLNodeMacro(node);
+  }
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerCameraPathLogic
-::OnMRMLSceneNodeRemoved(vtkMRMLNode* vtkNotUsed(node))
+void vtkSlicerCameraPathLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
 {
+  if (node==NULL)
+  {
+    vtkErrorMacro("An invalid node is attempted to be removed");
+    return;
+  }
+  if (node->IsA("vtkMRMLCameraPathNode"))
+  {
+    vtkDebugMacro("OnMRMLSceneNodeRemoved: Have a vtkMRMLCameraPathNode node");
+    vtkUnObserveMRMLNodeMacro(node);
+  }
+  else if (node->IsA("vtkMRMLPointSplineNode"))
+  {
+    vtkDebugMacro("OnMRMLSceneNodeRemoved: Have a vtkMRMLPointSplineNode node");
+    vtkUnObserveMRMLNodeMacro(node);
+  }
 }
