@@ -41,6 +41,18 @@ public:
 public slots:
 
 
+  void onDefaultCameraNodeChanged(vtkMRMLNode* node);
+  void onCameraPathNodeChanged(vtkMRMLNode* inputNode);
+  void onCameraPathVisibilityToggled(bool visibility);
+  void onTimeSliderChanged(int frameNbr);
+  void onFirstFrameClicked();
+  void onPreviousFrameClicked();
+  void onPlayPauseToogled(bool play);
+  void onNextFrameClicked();
+  void onLastFrameClicked();
+  void onFPSChanged(int framerate);
+  void playToNextFrame();
+
 protected:
   QScopedPointer<qSlicerCameraPathModuleWidgetPrivate> d_ptr;
 
@@ -49,6 +61,9 @@ protected:
 private:
   Q_DECLARE_PRIVATE(qSlicerCameraPathModuleWidget);
   Q_DISABLE_COPY(qSlicerCameraPathModuleWidget);
+
+  void setTimerInterval(int framerate);
+  double getFrameTime(int frameNbr);
 };
 
 #endif
