@@ -52,6 +52,12 @@ public slots:
   void onLastFrameClicked();
   void onFPSChanged(int framerate);
   void playToNextFrame();
+  void onDeleteAllClicked();
+  void onDeleteSelectedClicked();
+  void onGoToKeyFrameClicked();
+  void onUpdateKeyFrameClicked();
+  void onAddKeyFrameClicked();
+  void onComputePathClicked();
 
 protected:
   QScopedPointer<qSlicerCameraPathModuleWidgetPrivate> d_ptr;
