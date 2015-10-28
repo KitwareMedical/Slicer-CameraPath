@@ -222,6 +222,9 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeAdded(vtkMRMLNode* node)
 
   // Update PointSplines Name
   this->onCameraPathNodeRenamed(QString(cameraPathNode->GetName()));
+
+  // Show keyframes section
+  d->keyFramesSection->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -242,6 +245,12 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeRemoved(vtkMRMLNode* node)
     cameraPathNode->GetScene()->RemoveNode(cameraPathNode->GetPositionSplines());
     cameraPathNode->GetScene()->RemoveNode(cameraPathNode->GetFocalPointSplines());
     cameraPathNode->GetScene()->RemoveNode(cameraPathNode->GetViewUpSplines());
+  }
+
+  // Hide keyframes section if last node
+  if (d->cameraPathComboBox->nodeCount() == 1)
+  {
+    d->keyFramesSection->setEnabled(false);
   }
 }
 
