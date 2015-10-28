@@ -595,17 +595,14 @@
         <property name="alternatingRowColors">
          <bool>true</bool>
         </property>
-        <attribute name="horizontalHeaderStretchLastSection">
-         <bool>true</bool>
-        </attribute>
         <column>
          <property name="text">
-          <string/>
+          <string>Time</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string>Time</string>
+          <string>Camera</string>
          </property>
         </column>
         <column>
@@ -615,12 +612,7 @@
         </column>
         <column>
          <property name="text">
-          <string>Display</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Camera</string>
+          <string>Show</string>
          </property>
         </column>
        </widget>

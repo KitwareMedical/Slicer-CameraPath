@@ -135,6 +135,15 @@ void qSlicerCameraPathModuleWidget::setup()
   connect( d->goToKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onGoToKeyFrameClicked()) );
   connect( d->updateKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onUpdateKeyFrameClicked()) );
   connect( d->addKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onAddKeyFrameClicked()) );
+
+  d->keyFramesTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+  d->keyFramesTableWidget->setColumnWidth(0,80);
+  d->keyFramesTableWidget->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+  d->keyFramesTableWidget->horizontalHeader()->setResizeMode(2, QHeaderView::Interactive);
+  d->keyFramesTableWidget->setColumnWidth(2,50);
+  d->keyFramesTableWidget->setColumnWidth(3,50);
+  connect(d->keyFramesTableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onCellChanged(int, int)));
+//  connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onCellClicked(QTableWidgetItem*)));
 }
 
 //-----------------------------------------------------------------------------
@@ -252,6 +261,9 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeRemoved(vtkMRMLNode* node)
   {
     d->keyFramesSection->setEnabled(false);
   }
+
+  // Empty Table
+  this->emptyKeyFramesTableWidget();
 }
 
 //-----------------------------------------------------------------------------
@@ -397,8 +409,14 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
     return;
     }
 
+  // Remove All Keyframes
   cameraPathNode->RemoveKeyFrames();
+
+  // Update Slider range
   this->onCameraPathNodeChanged(cameraPathNode);
+
+  // Empty Table
+  this->emptyKeyFramesTableWidget();
 }
 
 //-----------------------------------------------------------------------------
@@ -435,15 +453,69 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
     return;
     }
 
+  // Create new camera
   vtkNew<vtkMRMLCameraNode> newCameraNode;
   newCameraNode->Copy(defaultCameraNode);
+  newCameraNode->SetHideFromEditors(1);
+  QString cameraPathName(cameraPathNode->GetName());
+  QString newCameraName(cameraPathName+"_Camera");
+  newCameraNode->SetName(newCameraName.toStdString().c_str());
+  cameraPathNode->GetScene()->AddNode(newCameraNode.GetPointer());
 
+  // Add key frame to t = tmax + 2s
   double t = 0;
   if (cameraPathNode->GetNumberOfKeyFrames() > 0)
     {
     t = cameraPathNode->GetMaximumT() + 2.0;
     }
-
   cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
+
+  // Update Slider range
+  this->onCameraPathNodeChanged(cameraPathNode);
+
+  // Add Key frame in table
+  QTableWidget* table = d->keyFramesTableWidget;
+  table->insertRow(table->rowCount());
+  QTableWidgetItem* timeItem = new QTableWidgetItem();
+  timeItem->setData(Qt::DisplayRole,t);
+  table->setItem(table->rowCount()-1, 0, timeItem );
+  QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(newCameraNode->GetID()));
+  cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
+  table->setItem(table->rowCount()-1, 1, cameraItem);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCellChanged(int row, int col)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  if (!cameraPathNode || col != 0)
+    {
+    return;
+    }
+
+  // Set Key Frame Time
+  double time = d->keyFramesTableWidget->item(row, col)->text().toDouble();
+  cameraPathNode->SetKeyFrameTime(row,time);
+
+  // Sort Table
+  d->keyFramesTableWidget->sortByColumn(0,Qt::AscendingOrder);
+
+  // Update Slider range
   this->onCameraPathNodeChanged(cameraPathNode);
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::emptyKeyFramesTableWidget()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  while (d->keyFramesTableWidget->rowCount() > 0)
+    {
+    d->keyFramesTableWidget->removeRow(0);
+    }
+}
+
