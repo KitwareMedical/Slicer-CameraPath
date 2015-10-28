@@ -38,6 +38,8 @@ public:
   qSlicerCameraPathModuleWidget(QWidget *parent=0);
   virtual ~qSlicerCameraPathModuleWidget();
 
+  void emptyKeyFramesTableWidget();
+
 public slots:
 
 
@@ -61,7 +63,8 @@ public slots:
   void onGoToKeyFrameClicked();
   void onUpdateKeyFrameClicked();
   void onAddKeyFrameClicked();
-  void onComputePathClicked();
+  void onCellChanged(int row, int col);
+
 
 protected:
   QScopedPointer<qSlicerCameraPathModuleWidgetPrivate> d_ptr;
