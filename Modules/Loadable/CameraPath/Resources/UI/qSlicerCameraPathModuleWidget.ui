@@ -27,7 +27,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="ctkCollapsibleButton" name="flyThroughCollapsibleButton">
+    <widget class="ctkCollapsibleButton" name="flyThroughSection">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -412,7 +412,10 @@
     </widget>
    </item>
    <item>
-    <widget class="ctkCollapsibleButton" name="keyFramesCollapsibleButton">
+    <widget class="ctkCollapsibleButton" name="keyFramesSection">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text" stdset="0">
       <string>Key Frames</string>
      </property>
@@ -424,9 +427,6 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QPushButton" name="deleteAllPushButton">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -456,9 +456,6 @@
         </item>
         <item>
          <widget class="QPushButton" name="deleteSelectedPushButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -491,9 +488,6 @@
         </item>
         <item>
          <widget class="QPushButton" name="goToKeyFramePushButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -523,9 +517,6 @@
         </item>
         <item>
          <widget class="QPushButton" name="updateKeyFramePushButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -555,9 +546,6 @@
         </item>
         <item>
          <widget class="QPushButton" name="addKeyFramePushButton">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -641,7 +629,7 @@
     </widget>
    </item>
    <item>
-    <widget class="ctkCollapsibleButton" name="SelectedKeyFrameCollapsibleButton">
+    <widget class="ctkCollapsibleButton" name="SelectedKeyFrameSection">
      <property name="enabled">
       <bool>false</bool>
      </property>
