@@ -58,7 +58,7 @@ vtkMRMLNodeNewMacro(vtkMRMLPointSplineNode)
 vtkMRMLPointSplineNode::vtkMRMLPointSplineNode()
 {
   this->Internal = new vtkInternal(this);
-  this->HideFromEditors = 0;
+  this->HideFromEditors = 1;
 }
 
 //----------------------------------------------------------------------------

@@ -29,6 +29,7 @@
 
 // VTK includes
 #include "vtkNew.h"
+#include "vtkMRMLScene.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -109,6 +110,12 @@ void qSlicerCameraPathModuleWidget::setup()
            this, SLOT(onDefaultCameraNodeChanged(vtkMRMLNode*)));
   connect( d->cameraPathComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
            this, SLOT(onCameraPathNodeChanged(vtkMRMLNode*)));
+  connect( d->cameraPathComboBox, SIGNAL(currentNodeRenamed(QString)),
+           this, SLOT(onCameraPathNodeRenamed(QString)));
+  connect( d->cameraPathComboBox, SIGNAL(nodeAdded(vtkMRMLNode*)),
+           this, SLOT(onCameraPathNodeAdded(vtkMRMLNode*)));
+  connect( d->cameraPathComboBox, SIGNAL(nodeAboutToBeRemoved(vtkMRMLNode*)),
+           this, SLOT(onCameraPathNodeRemoved(vtkMRMLNode*)));
   connect( d->cameraPathVisibilityPushButton, SIGNAL(toggled(bool)),
            this, SLOT(onCameraPathVisibilityToggled(bool)) );
 
@@ -148,23 +155,95 @@ void qSlicerCameraPathModuleWidget::onDefaultCameraNodeChanged(vtkMRMLNode* node
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerCameraPathModuleWidget::onCameraPathNodeChanged(vtkMRMLNode* inputNode)
+void qSlicerCameraPathModuleWidget::onCameraPathNodeChanged(vtkMRMLNode* node)
 {
   Q_D(qSlicerCameraPathModuleWidget);
 
-  vtkMRMLCameraPathNode* cameraPathNode = vtkMRMLCameraPathNode::SafeDownCast(inputNode);
+  vtkMRMLCameraPathNode* cameraPathNode = vtkMRMLCameraPathNode::SafeDownCast(node);
 
-  if (cameraPathNode)
+  if (!cameraPathNode)
     {
-
-    // Slider min/max
-    double tmax = cameraPathNode->GetMaximumT();
-    double tmin = cameraPathNode->GetMinimumT();
-    int framerate = d->fpsSpinBox->value();
-    int numberOfFrames = framerate * int(tmax - tmin);
-    d->timeSlider->setMaximum(numberOfFrames);
-
+    return;
     }
+
+  // Slider min/max
+  double tmax = cameraPathNode->GetMaximumT();
+  double tmin = cameraPathNode->GetMinimumT();
+  int framerate = d->fpsSpinBox->value();
+  int numberOfFrames = framerate * int(tmax - tmin);
+  d->timeSlider->setMaximum(numberOfFrames);
+
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCameraPathNodeRenamed(QString nodeName)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
+  QString positionSplineName(nodeName+"_PositionSpline");
+  QString focalPointSplineName(nodeName+"_FocalPointSpline");
+  QString viewUpSplineName(nodeName+"_ViewUpSpline");
+
+  cameraPathNode->GetPositionSplines()->SetName(positionSplineName.toStdString().c_str());
+  cameraPathNode->GetFocalPointSplines()->SetName(focalPointSplineName.toStdString().c_str());
+  cameraPathNode->GetViewUpSplines()->SetName(viewUpSplineName.toStdString().c_str());
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCameraPathNodeAdded(vtkMRMLNode* node)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode = vtkMRMLCameraPathNode::SafeDownCast(node);
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
+  // Add PointSplines to Scene
+  if (cameraPathNode->GetScene()
+      && !cameraPathNode->GetPositionSplines()->GetScene()
+      && !cameraPathNode->GetFocalPointSplines()->GetScene()
+      && !cameraPathNode->GetViewUpSplines()->GetScene()
+      )
+    {
+    cameraPathNode->GetScene()->AddNode(cameraPathNode->GetPositionSplines());
+    cameraPathNode->GetScene()->AddNode(cameraPathNode->GetFocalPointSplines());
+    cameraPathNode->GetScene()->AddNode(cameraPathNode->GetViewUpSplines());
+    }
+
+  // Update PointSplines Name
+  this->onCameraPathNodeRenamed(QString(cameraPathNode->GetName()));
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCameraPathNodeRemoved(vtkMRMLNode* node)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode = vtkMRMLCameraPathNode::SafeDownCast(node);
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
+  // Remove PointSplines from Scene
+  if (cameraPathNode->GetScene())
+  {
+    cameraPathNode->GetScene()->RemoveNode(cameraPathNode->GetPositionSplines());
+    cameraPathNode->GetScene()->RemoveNode(cameraPathNode->GetFocalPointSplines());
+    cameraPathNode->GetScene()->RemoveNode(cameraPathNode->GetViewUpSplines());
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -174,6 +253,11 @@ void qSlicerCameraPathModuleWidget::onCameraPathVisibilityToggled(bool visibilit
 
   vtkMRMLCameraPathNode* cameraPathNode =
           vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
 
   cameraPathNode->GetPositionSplines()->SetDisplayVisibility(visibility);
 }
@@ -188,6 +272,11 @@ void qSlicerCameraPathModuleWidget::onTimeSliderChanged(int frameNbr)
 
   vtkMRMLCameraNode* cameraNode =
           vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
+
+  if (!cameraPathNode || !cameraNode)
+    {
+    return;
+    }
 
   int framerate = d->fpsSpinBox->value();
   double tmin = cameraPathNode->GetMinimumT();
@@ -259,6 +348,11 @@ void qSlicerCameraPathModuleWidget::onFPSChanged(int framerate)
   vtkMRMLCameraPathNode* cameraPathNode =
           vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
 
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
   double tmax = cameraPathNode->GetMaximumT();
   double tmin = cameraPathNode->GetMinimumT();
   int numberOfFrames = framerate * int(tmax - tmin);
@@ -286,6 +380,11 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
 
   vtkMRMLCameraPathNode* cameraPathNode =
           vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
 
   cameraPathNode->RemoveKeyFrames();
 
@@ -321,6 +420,11 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   vtkMRMLCameraNode* defaultCameraNode =
           vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
 
+  if (!cameraPathNode || !defaultCameraNode)
+    {
+    return;
+    }
+
   vtkNew<vtkMRMLCameraNode> newCameraNode;
   newCameraNode->Copy(defaultCameraNode);
 
@@ -342,6 +446,11 @@ void qSlicerCameraPathModuleWidget::onComputePathClicked()
 
   vtkMRMLCameraPathNode* cameraPathNode =
           vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
 
   cameraPathNode->CreatePath();
 
