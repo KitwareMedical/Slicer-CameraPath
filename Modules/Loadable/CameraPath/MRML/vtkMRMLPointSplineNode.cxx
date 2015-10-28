@@ -187,7 +187,7 @@ void vtkMRMLPointSplineNode::UpdatePolyData(int framerate)
   vtkSmartPointer<vtkPoints> splinePoints = vtkSmartPointer<vtkPoints>::New();
   for (int i = 0; i < numSplinePoints; ++i)
     {
-    double t = (i/framerate) + tmin;
+    double t = (i/(double)framerate) + tmin;
     double pt[3];
     this->Evaluate(t,pt);
     splinePoints->InsertNextPoint(pt);
