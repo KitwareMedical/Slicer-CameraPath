@@ -42,8 +42,12 @@ public slots:
 
 
   void onDefaultCameraNodeChanged(vtkMRMLNode* node);
-  void onCameraPathNodeChanged(vtkMRMLNode* inputNode);
+  void onCameraPathNodeChanged(vtkMRMLNode* node);
+  void onCameraPathNodeRenamed(QString nodeName);
+  void onCameraPathNodeAdded(vtkMRMLNode* node);
+  void onCameraPathNodeRemoved(vtkMRMLNode* node);
   void onCameraPathVisibilityToggled(bool visibility);
+
   void onTimeSliderChanged(int frameNbr);
   void onFirstFrameClicked();
   void onPreviousFrameClicked();
