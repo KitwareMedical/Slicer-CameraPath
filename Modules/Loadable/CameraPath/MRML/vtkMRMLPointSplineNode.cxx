@@ -10,6 +10,8 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
+#include <vtkPointData.h>
+#include <vtkFloatArray.h>
 #if (VTK_MAJOR_VERSION > 5)
 #include <vtkAlgorithmOutput.h>
 #include <vtkEventForwarderCommand.h>
@@ -126,6 +128,9 @@ void vtkMRMLPointSplineNode::CreateDefaultDisplayNodes()
   vtkNew<vtkMRMLModelDisplayNode> dispNode;
   this->GetScene()->AddNode(dispNode.GetPointer());
   this->SetAndObserveDisplayNodeID(dispNode->GetID());
+  dispNode->SetScalarVisibility(1);
+  dispNode->SetActiveScalarName("Time");
+  dispNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeInvertedGrey");
 }
 
 //----------------------------------------------------------------------------
@@ -185,17 +190,22 @@ void vtkMRMLPointSplineNode::UpdatePolyData(int framerate)
   int numSplinePoints = framerate * int(tmax - tmin);
 
   vtkSmartPointer<vtkPoints> splinePoints = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkFloatArray> timeArray = vtkSmartPointer<vtkFloatArray>::New();
+  timeArray->SetName("Time");
   for (int i = 0; i < numSplinePoints; ++i)
     {
     double t = (i/(double)framerate) + tmin;
     double pt[3];
     this->Evaluate(t,pt);
     splinePoints->InsertNextPoint(pt);
+    timeArray->InsertNextValue(t);
     }
 
   // Set up spline points
   vtkSmartPointer<vtkPolyData> splinePolyData = vtkSmartPointer<vtkPolyData>::New();
   splinePolyData->SetPoints( splinePoints );
+  splinePolyData->GetPointData()->AddArray(timeArray);
+  splinePolyData->GetPointData()->SetActiveScalars("Time");
 
   // Set up curves between adjacent points
   splinePolyData->Allocate( numSplinePoints-1 );
