@@ -222,7 +222,7 @@ void vtkMRMLPointSplineNode::UpdatePolyData(int framerate)
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLPointSplineNode::Initialize(double min, double max)
+void vtkMRMLPointSplineNode::RemoveAllPoints()
 {
   if ( !this->GetXSpline() || !this->GetYSpline() || !this->GetZSpline() )
     {
@@ -233,10 +233,24 @@ void vtkMRMLPointSplineNode::Initialize(double min, double max)
   this->GetXSpline()->RemoveAllPoints();
   this->GetYSpline()->RemoveAllPoints();
   this->GetZSpline()->RemoveAllPoints();
+}
+//----------------------------------------------------------------------------
+void vtkMRMLPointSplineNode::RemovePoint(double t)
+{
+  if ( !this->GetXSpline() || !this->GetYSpline() || !this->GetZSpline() )
+    {
+    vtkErrorMacro("Please specify splines");
+    return;
+    }
+  if ( t < this->GetMinimumT() || t > this->GetMaximumT() )
+    {
+    vtkErrorMacro("Time outside of parametric range");
+    return;
+    }
 
-  this->GetXSpline()->SetParametricRange(min, max);
-  this->GetYSpline()->SetParametricRange(min, max);
-  this->GetZSpline()->SetParametricRange(min, max);
+  this->GetXSpline()->RemovePoint(t);
+  this->GetYSpline()->RemovePoint(t);
+  this->GetZSpline()->RemovePoint(t);
 }
 
 //----------------------------------------------------------------------------
@@ -250,11 +264,6 @@ void vtkMRMLPointSplineNode::AddPoint(double t, double point[3])
   if ( !point )
     {
     vtkErrorMacro("No point given");
-    return;
-    }
-  if ( t < this->GetMinimumT() || t > this->GetMaximumT() )
-    {
-    vtkErrorMacro("Parameter outside of parameter range");
     return;
     }
 

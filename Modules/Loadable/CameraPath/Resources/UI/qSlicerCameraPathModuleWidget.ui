@@ -637,25 +637,6 @@
         </column>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="computeCameraPathPushButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="toolTip">
-         <string>Recomputes the camera path from the key frames list.</string>
-        </property>
-        <property name="text">
-         <string>Compute Camera Path</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>

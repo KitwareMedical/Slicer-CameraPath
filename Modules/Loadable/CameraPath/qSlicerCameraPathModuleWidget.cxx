@@ -135,7 +135,6 @@ void qSlicerCameraPathModuleWidget::setup()
   connect( d->goToKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onGoToKeyFrameClicked()) );
   connect( d->updateKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onUpdateKeyFrameClicked()) );
   connect( d->addKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onAddKeyFrameClicked()) );
-  connect( d->computeCameraPathPushButton, SIGNAL(clicked()), this, SLOT(onComputePathClicked()) );
 }
 
 //-----------------------------------------------------------------------------
@@ -282,8 +281,11 @@ void qSlicerCameraPathModuleWidget::onTimeSliderChanged(int frameNbr)
   double tmin = cameraPathNode->GetMinimumT();
   double t = (frameNbr/(double)framerate) + tmin;
 
-  cameraPathNode->GetCameraAt(t, cameraNode);
-  cameraNode->ResetClippingRange();
+  if (cameraPathNode->GetNumberOfKeyFrames() != 0)
+    {
+    cameraPathNode->GetCameraAt(t, cameraNode);
+    cameraNode->ResetClippingRange();
+    }
 
   std::stringstream stream;
   stream << std::fixed << std::setprecision(1) << t;
@@ -387,8 +389,7 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
     }
 
   cameraPathNode->RemoveKeyFrames();
-
-  d->computeCameraPathPushButton->setEnabled(true);
+  this->onCameraPathNodeChanged(cameraPathNode);
 }
 
 //-----------------------------------------------------------------------------
@@ -435,26 +436,5 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
     }
 
   cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
-
-  d->computeCameraPathPushButton->setEnabled(true);
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerCameraPathModuleWidget::onComputePathClicked()
-{
-  Q_D(qSlicerCameraPathModuleWidget);
-
-  vtkMRMLCameraPathNode* cameraPathNode =
-          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
-
-  if (!cameraPathNode)
-    {
-    return;
-    }
-
-  cameraPathNode->CreatePath();
-
   this->onCameraPathNodeChanged(cameraPathNode);
-
-  d->computeCameraPathPushButton->setEnabled(false);
 }

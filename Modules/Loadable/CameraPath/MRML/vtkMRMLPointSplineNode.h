@@ -52,8 +52,9 @@ public:
                   splineType* ySpline,
                   splineType* zSpline);
 
-  void Initialize(double min, double max); // RemoveAllPoints and SetParametricRange
+  void RemoveAllPoints();
   void AddPoint(double t, double point[3]);
+  void RemovePoint(double t);
   void UpdatePolyData(int framerate);
   void Evaluate(double t, double point[3]=0);
 

@@ -90,8 +90,6 @@ public:
   /// CameraPath methods
   //--------------------------------------------------------------------------
 
-  int GetPathStatus();
-
   vtkIdType GetNumberOfKeyFrames();
   double GetMinimumT();
   double GetMaximumT();
@@ -144,9 +142,6 @@ protected:
   virtual ~vtkMRMLCameraPathNode();
   vtkMRMLCameraPathNode(const vtkMRMLCameraPathNode&);
   void operator=(const vtkMRMLCameraPathNode&);
-
-  void SetPathStatus(int status);
-  void SetPathChanged();
 
   class vtkInternal;
   vtkInternal* Internal;
