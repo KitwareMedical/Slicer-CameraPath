@@ -119,6 +119,7 @@ public:
 
   void RemoveKeyFrames();
   void RemoveKeyFrame(vtkIdType index);
+  void RemoveCameraFromScene(vtkIdType index);
 
   void SortKeyFrames();
 

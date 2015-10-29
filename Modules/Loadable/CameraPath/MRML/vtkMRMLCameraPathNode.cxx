@@ -72,6 +72,7 @@ vtkMRMLCameraPathNode::vtkMRMLCameraPathNode()
 //----------------------------------------------------------------------------
 vtkMRMLCameraPathNode::~vtkMRMLCameraPathNode()
 {
+  this->RemoveKeyFrames();
   delete this->Internal;
 }
 
@@ -437,11 +438,19 @@ void vtkMRMLCameraPathNode::AddKeyFrame(double t,
 //---------------------------------------------------------------------------
 void vtkMRMLCameraPathNode::RemoveKeyFrames()
 {
+  // Update splines
   this->GetPositionSplines()->RemoveAllPoints();
   this->GetFocalPointSplines()->RemoveAllPoints();
   this->GetViewUpSplines()->RemoveAllPoints();
   this->CreatePath();
 
+  // Remove cameras
+  for (vtkIdType i = 0; i < this->GetNumberOfKeyFrames(); ++i)
+    {
+    this->RemoveCameraFromScene(i);
+    }
+
+  // Remove keyframes
   this->Internal->KeyFrames.clear();
 }
 
@@ -454,14 +463,36 @@ void vtkMRMLCameraPathNode::RemoveKeyFrame(vtkIdType index)
     return;
     }
 
+  // Update splines
   double t = this->GetKeyFrame(index).Time;
   this->GetPositionSplines()->RemovePoint(t);
   this->GetFocalPointSplines()->RemovePoint(t);
   this->GetViewUpSplines()->RemovePoint(t);
   this->CreatePath();
 
+  // Remove camera
+  this->RemoveCameraFromScene(index);
+
+  // Remove keyframe
   this->Internal->KeyFrames.erase(
               this->Internal->KeyFrames.begin() + index);
+}
+
+
+//---------------------------------------------------------------------------
+void vtkMRMLCameraPathNode::RemoveCameraFromScene(vtkIdType index)
+{
+  if( index < 0 || index >= this->GetNumberOfKeyFrames() )
+    {
+    vtkErrorMacro("No key frame at this index");
+    return;
+    }
+
+  vtkMRMLScene* scene = this->GetKeyFrameCamera(index)->GetScene();
+  if(scene)
+    {
+    scene->RemoveNode(this->GetKeyFrameCamera(index));
+    }
 }
 
 //----------------------------------------------------------------------------
