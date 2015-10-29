@@ -577,22 +577,41 @@ void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
     return;
     }
 
-  // Get keyframe index
-  int index = selectedItems.at(0)->row();
+  // Popup window to ask the update confirmation
+  ctkMessageBox updateMsgBox;
+  updateMsgBox.setWindowTitle("Update selected Keyframe?");
+  QString labelText = QString("Do you wish to update the selected keyframe to your current camera? ");
+  updateMsgBox.setText(labelText);
+  QPushButton *updateButton =
+    updateMsgBox.addButton(tr("Update"), QMessageBox::AcceptRole);
+  updateMsgBox.addButton(QMessageBox::Cancel);
+  updateMsgBox.setDefaultButton(updateButton);
+  updateMsgBox.setIcon(QMessageBox::Question);
+  updateMsgBox.setDontShowAgainVisible(true);
+  updateMsgBox.setDontShowAgainSettingsKey("Keyframes/AlwaysUpdateKeyframes");
+  updateMsgBox.exec();
+  if (updateMsgBox.clickedButton() == updateButton)
+    {
+    // Get keyframe index
+    int index = selectedItems.at(0)->row();
 
-  // Get keyframe camera
-  vtkSmartPointer<vtkMRMLCameraNode> keyframeCameraNode =
-      cameraPathNode->GetKeyFrameCamera(index);
+    // Get keyframe camera
+    vtkSmartPointer<vtkMRMLCameraNode> keyframeCameraNode =
+        cameraPathNode->GetKeyFrameCamera(index);
 
-  // Update keyframe camera
-  keyframeCameraNode->Copy(defaultCameraNode);
-  keyframeCameraNode->SetHideFromEditors(1);
-  QString cameraPathName(cameraPathNode->GetName());
-  QString cameraName(cameraPathName+"_Camera");
-  keyframeCameraNode->SetName(cameraName.toStdString().c_str());
+    // Update keyframe camera
+    keyframeCameraNode->Copy(defaultCameraNode);
+    keyframeCameraNode->SetHideFromEditors(1);
+    QString cameraPathName(cameraPathNode->GetName());
+    QString cameraName(cameraPathName+"_Camera");
+    keyframeCameraNode->SetName(cameraName.toStdString().c_str());
 
-  // XXX Update splines
-  cameraPathNode->SetKeyFrameCamera(index,keyframeCameraNode);
+    // XXX Update splines
+    cameraPathNode->SetKeyFrameCamera(index,keyframeCameraNode);
+    }
+
+  // clear the selection on the table
+  d->keyFramesTableWidget->clearSelection();
 }
 
 //-----------------------------------------------------------------------------
