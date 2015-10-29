@@ -428,7 +428,39 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
 //-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::onGoToKeyFrameClicked()
 {
- //TODO
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  vtkMRMLCameraNode* defaultCameraNode =
+          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
+
+  if (!cameraPathNode || !defaultCameraNode)
+    {
+    return;
+    }
+
+  // Get the selected rows
+  QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
+
+  // Make sure that only one is selected
+  if (selectedItems.size() != 2)
+    {
+    return;
+    }
+
+  // Get keyframe time
+  int row = selectedItems.at(0)->row();
+  double t = d->keyFramesTableWidget->item(row, 0)->text().toDouble();
+
+  // Get frame number
+  int framerate = d->fpsSpinBox->value();
+  double tmin = cameraPathNode->GetMinimumT();
+  int frameNbr = framerate * int(t - tmin);
+
+  // Set slider to value
+  d->timeSlider->setValue(frameNbr);
 }
 
 //-----------------------------------------------------------------------------
