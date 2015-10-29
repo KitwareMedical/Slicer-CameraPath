@@ -19,6 +19,9 @@
 #include <QDebug>
 #include <QTimer>
 
+// CTK includes
+#include "ctkMessageBox.h"
+
 // SlicerQt includes
 #include "qSlicerCameraPathModuleWidget.h"
 #include "ui_qSlicerCameraPathModuleWidget.h"
@@ -409,20 +412,106 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
     return;
     }
 
-  // Remove All Keyframes
-  cameraPathNode->RemoveKeyFrames();
+  // Popup window to ask the delete confirmation
+  ctkMessageBox deleteMsgBox;
+  deleteMsgBox.setWindowTitle("Delete all Keyframes?");
+  QString labelText = QString("Delete all Keyframes?");
+  deleteMsgBox.setText(labelText);
+  QPushButton *deleteButton =
+    deleteMsgBox.addButton(tr("Delete"), QMessageBox::AcceptRole);
+  deleteMsgBox.addButton(QMessageBox::Cancel);
+  deleteMsgBox.setDefaultButton(deleteButton);
+  deleteMsgBox.setIcon(QMessageBox::Question);
+  deleteMsgBox.setDontShowAgainVisible(true);
+  deleteMsgBox.setDontShowAgainSettingsKey("Keyframes/AlwaysDeleteKeyframes");
+  deleteMsgBox.exec();
+  if (deleteMsgBox.clickedButton() == deleteButton)
+    {
+    // Remove All Keyframes
+    cameraPathNode->RemoveKeyFrames();
 
-  // Update Slider range
-  this->onCameraPathNodeChanged(cameraPathNode);
+    // Empty Table
+    this->emptyKeyFramesTableWidget();
 
-  // Empty Table
-  this->emptyKeyFramesTableWidget();
+    // Update Slider range
+    this->onCameraPathNodeChanged(cameraPathNode);
+    }
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
 {
- //TODO
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  vtkMRMLCameraNode* defaultCameraNode =
+          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
+
+  if (!cameraPathNode || !defaultCameraNode)
+    {
+    return;
+    }
+
+  // Get the selected rows
+  QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
+
+  // Make sure something is selected
+  if (selectedItems.isEmpty())
+    {
+    return;
+    }
+
+  // iterate over the selected items and save their row numbers (there are
+  // selected indices for each column in a row, so jump by the number of
+  // columns), so can delete without relying on the table
+  QList<int> rows;
+  for (int i = 0; i < selectedItems.size(); i += 2)
+    {
+    // get the row
+    int row = selectedItems.at(i)->row();
+    rows << row;
+    }
+  // sort the list
+  qSort(rows);
+
+  // Popup window to ask the delete confirmation
+  ctkMessageBox deleteMsgBox;
+  deleteMsgBox.setWindowTitle("Delete selected Keyframes?");
+  QString labelText = QString("Delete ")
+    + QString::number(rows.size())
+    + QString(" Keyframes?");
+  deleteMsgBox.setText(labelText);
+  QPushButton *deleteButton =
+    deleteMsgBox.addButton(tr("Delete"), QMessageBox::AcceptRole);
+  deleteMsgBox.addButton(QMessageBox::Cancel);
+  deleteMsgBox.setDefaultButton(deleteButton);
+  deleteMsgBox.setIcon(QMessageBox::Question);
+  deleteMsgBox.setDontShowAgainVisible(true);
+  deleteMsgBox.setDontShowAgainSettingsKey("Keyframes/AlwaysDeleteKeyframes");
+  deleteMsgBox.exec();
+  if (deleteMsgBox.clickedButton() == deleteButton)
+    {
+    // delete from the end
+    for (int i = rows.size() - 1; i >= 0; --i)
+      {
+      int index = rows.at(i);
+
+      // Remove Keyframe
+      cameraPathNode->RemoveKeyFrame(index);
+
+      // Remove Table row
+      d->keyFramesTableWidget->removeRow(index);
+      }
+
+    // Update Slider range
+    this->onCameraPathNodeChanged(cameraPathNode);
+    }
+
+  // clear the selection on the table
+  d->keyFramesTableWidget->clearSelection();
+
 }
 
 //-----------------------------------------------------------------------------
