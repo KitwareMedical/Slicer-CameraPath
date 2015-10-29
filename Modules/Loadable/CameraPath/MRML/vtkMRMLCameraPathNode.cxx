@@ -294,12 +294,15 @@ void vtkMRMLCameraPathNode::SetKeyFrameCamera(vtkIdType index,
     return;
     }
 
+// XXX If the camera is modified, the pointSplines are not automatically
+// updated, so we need to do a SetKeyFrameCamera
+/*
   if( this->GetKeyFrameCamera(index) == camera)
     {
     vtkWarningMacro("Camera identical : no effect");
     return;
     }
-
+*/
   this->Internal->KeyFrames.at(index).Camera = camera;
 
   double time = this->GetKeyFrame(index).Time;

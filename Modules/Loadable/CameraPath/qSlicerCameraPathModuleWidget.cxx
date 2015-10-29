@@ -434,7 +434,44 @@ void qSlicerCameraPathModuleWidget::onGoToKeyFrameClicked()
 //-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
 {
-  //TODO
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  vtkMRMLCameraNode* defaultCameraNode =
+          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
+
+  if (!cameraPathNode || !defaultCameraNode)
+    {
+    return;
+    }
+
+  // Get the selected rows
+  QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
+
+  // Make sure that only one is selected
+  if (selectedItems.size() != 2)
+    {
+    return;
+    }
+
+  // Get keyframe index
+  int index = selectedItems.at(0)->row();
+
+  // Get keyframe camera
+  vtkSmartPointer<vtkMRMLCameraNode> keyframeCameraNode =
+      cameraPathNode->GetKeyFrameCamera(index);
+
+  // Update keyframe camera
+  keyframeCameraNode->Copy(defaultCameraNode);
+  keyframeCameraNode->SetHideFromEditors(1);
+  QString cameraPathName(cameraPathNode->GetName());
+  QString cameraName(cameraPathName+"_Camera");
+  keyframeCameraNode->SetName(cameraName.toStdString().c_str());
+
+  // XXX Update splines
+  cameraPathNode->SetKeyFrameCamera(index,keyframeCameraNode);
 }
 
 //-----------------------------------------------------------------------------
