@@ -18,6 +18,7 @@
 // Qt includes
 #include <QDebug>
 #include <QTimer>
+#include <QInputDialog>
 
 // CTK includes
 #include "ctkMessageBox.h"
@@ -630,6 +631,18 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
     return;
     }
 
+  // Ask time to user
+  bool addButtonPressed;
+  double t = QInputDialog::getDouble(this,
+                                         tr("Add Keyframe"),
+                                         tr("Add Keyframe to time below (s) :"),
+                                         0.0, -1000000, 1000000, 1,
+                                         &addButtonPressed);
+  if (!addButtonPressed)
+    {
+    return;
+    }
+
   // Create new camera
   vtkNew<vtkMRMLCameraNode> newCameraNode;
   newCameraNode->Copy(defaultCameraNode);
@@ -639,16 +652,14 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   newCameraNode->SetName(newCameraName.toStdString().c_str());
   cameraPathNode->GetScene()->AddNode(newCameraNode.GetPointer());
 
-  // Add key frame to t = tmax + 2s
-  double t = 0;
-  if (cameraPathNode->GetNumberOfKeyFrames() > 0)
-    {
-    t = cameraPathNode->GetMaximumT() + 2.0;
-    }
+  // Add key frame
   cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
 
   // Update Slider range
   this->onCameraPathNodeChanged(cameraPathNode);
+
+  // Block signals from table
+  d->keyFramesTableWidget->blockSignals(true);
 
   // Add Key frame in table
   QTableWidget* table = d->keyFramesTableWidget;
@@ -659,6 +670,12 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(newCameraNode->GetID()));
   cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
   table->setItem(table->rowCount()-1, 1, cameraItem);
+
+  // Sort Table
+  d->keyFramesTableWidget->sortByColumn(0,Qt::AscendingOrder);
+
+  // Unblock signals from table
+  d->keyFramesTableWidget->blockSignals(false);
 }
 
 //-----------------------------------------------------------------------------
