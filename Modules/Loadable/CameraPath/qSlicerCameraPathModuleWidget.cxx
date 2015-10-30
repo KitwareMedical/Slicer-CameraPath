@@ -631,15 +631,30 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
     return;
     }
 
+  // Default time value
+  double t = 0.0;
+  if (cameraPathNode->GetNumberOfKeyFrames())
+    {
+    t = cameraPathNode->GetMaximumT() + 2.0;
+    }
+
   // Ask time to user
   bool addButtonPressed;
-  double t = QInputDialog::getDouble(this,
-                                         tr("Add Keyframe"),
-                                         tr("Add Keyframe to time below (s) :"),
-                                         0.0, -1000000, 1000000, 1,
-                                         &addButtonPressed);
+  t = QInputDialog::getDouble(this,
+                              tr("Add Keyframe"),
+                              tr("Add Keyframe to time below (s) :"),
+                              t, -1000000, 1000000, 1,
+                              &addButtonPressed);
   if (!addButtonPressed)
     {
+    return;
+    }
+  vtkIdType index = cameraPathNode->KeyFrameIndexAt(t);
+  if(index != -1)
+    {
+    // Popup window to inform that time already associated
+    // with other keyframe
+    this->showErrorTimeMsgBox(t,index);
     return;
     }
 
@@ -691,8 +706,19 @@ void qSlicerCameraPathModuleWidget::onCellChanged(int row, int col)
     return;
     }
 
-  // Set Key Frame Time
+  // Get new time
   double time = d->keyFramesTableWidget->item(row, col)->text().toDouble();
+
+  // Check if time already used
+  vtkIdType index = cameraPathNode->KeyFrameIndexAt(time);
+  if(index != -1)
+    {
+    this->showErrorTimeMsgBox(time,index);
+    // XXX Need to set back the former value!!
+    return;
+    }
+
+  // Set Key Frame Time
   cameraPathNode->SetKeyFrameTime(row,time);
 
   // Sort Table
@@ -713,3 +739,22 @@ void qSlicerCameraPathModuleWidget::emptyKeyFramesTableWidget()
     }
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::showErrorTimeMsgBox(double time, vtkIdType index)
+{
+  // Popup window to inform that time already associated
+  // with other keyframe
+  ctkMessageBox errorTimeMsgBox;
+  errorTimeMsgBox.setWindowTitle("Error Time selected");
+  QString labelText =
+      QString("A keyframe already exists for t = ")
+      + QString::number(time)
+      + QString(" at row # ")
+      + QString::number(index);
+  errorTimeMsgBox.setText(labelText);
+  QPushButton *okButton =
+    errorTimeMsgBox.addButton(tr("Ok"), QMessageBox::AcceptRole);
+  errorTimeMsgBox.setDefaultButton(okButton);
+  errorTimeMsgBox.setIcon(QMessageBox::Warning);
+  errorTimeMsgBox.exec();
+}

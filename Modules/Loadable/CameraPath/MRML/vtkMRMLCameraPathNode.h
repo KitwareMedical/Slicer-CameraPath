@@ -116,6 +116,7 @@ public:
                    double position[3],
                    double focalPoint[3],
                    double viewUp[3]);
+  vtkIdType KeyFrameIndexAt(double t);
 
   void RemoveKeyFrames();
   void RemoveKeyFrame(vtkIdType index);

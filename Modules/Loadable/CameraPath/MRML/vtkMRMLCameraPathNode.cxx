@@ -239,6 +239,14 @@ void vtkMRMLCameraPathNode::SetKeyFrame(vtkIdType index, KeyFrame keyFrame)
     vtkWarningMacro("Key frame identical : no effect");
     return;
     }
+  vtkIdType otherIndex = this->KeyFrameIndexAt(keyFrame.Time);
+  if (otherIndex != -1)
+    {
+    std::cerr << "A keyframe already exists for t = " << time << std::endl
+              << "Keyframe ID : " << otherIndex << std::endl
+              << std::endl;
+    return;
+    }
 
   KeyFrame oldKeyFrame = this->GetKeyFrame(index);
 
@@ -263,10 +271,17 @@ void vtkMRMLCameraPathNode::SetKeyFrameTime(vtkIdType index, double time)
     vtkErrorMacro("No key frame at this index");
     return;
     }
-
   if( this->GetKeyFrameTime(index) == time)
     {
     vtkWarningMacro("Time identical : no effect");
+    return;
+    }
+  vtkIdType otherIndex = this->KeyFrameIndexAt(time);
+  if (otherIndex != -1)
+    {
+    std::cerr << "A keyframe already exists for t = " << time << std::endl
+              << "Keyframe ID : " << otherIndex << std::endl
+              << std::endl;
     return;
     }
 
@@ -393,12 +408,9 @@ void vtkMRMLCameraPathNode::SetKeyFrameViewUp(vtkIdType index,
 void vtkMRMLCameraPathNode::AddKeyFrame(KeyFrame keyFrame)
 {
   double t = keyFrame.Time;
-  KeyFrameVector::iterator it = find_if(this->Internal->KeyFrames.begin(),
-                                       this->Internal->KeyFrames.end(),
-                                       timeEqual(t));
-  if (it != this->Internal->KeyFrames.end())
+  vtkIdType index = this->KeyFrameIndexAt(t);
+  if (index != -1)
     {
-    vtkIdType index = it - this->Internal->KeyFrames.begin();
     std::cerr << "A keyframe already exists for t = " << t << std::endl
               << "Keyframe ID : " << index << std::endl
               << "To update it, use the methods 'SetKeyFrame(index)' instead."
@@ -435,6 +447,19 @@ void vtkMRMLCameraPathNode::AddKeyFrame(double t,
   this->AddKeyFrame(t, camera.GetPointer());
 }
 
+//---------------------------------------------------------------------------
+vtkIdType vtkMRMLCameraPathNode::KeyFrameIndexAt(double t)
+{
+  KeyFrameVector::iterator it = find_if(this->Internal->KeyFrames.begin(),
+                                       this->Internal->KeyFrames.end(),
+                                       timeEqual(t));
+  if (it != this->Internal->KeyFrames.end())
+    {
+    vtkIdType index = it - this->Internal->KeyFrames.begin();
+    return index;
+    }
+  return -1;
+}
 //---------------------------------------------------------------------------
 void vtkMRMLCameraPathNode::RemoveKeyFrames()
 {

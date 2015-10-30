@@ -39,6 +39,7 @@ public:
   virtual ~qSlicerCameraPathModuleWidget();
 
   void emptyKeyFramesTableWidget();
+  void showErrorTimeMsgBox(double time, vtkIdType index);
 
 public slots:
 
