@@ -160,6 +160,21 @@ void qSlicerCameraPathModuleWidget::setTimerInterval(int framerate)
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::updateSliderRange()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+      vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  double tmax = cameraPathNode->GetMaximumT();
+  double tmin = cameraPathNode->GetMinimumT();
+  int framerate = d->fpsSpinBox->value();
+  int numberOfFrames = framerate * int(tmax - tmin);
+  d->timeSlider->setMaximum(numberOfFrames);
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::onDefaultCameraNodeChanged(vtkMRMLNode* node)
 {
   //vtkMRMLCameraNode* cameraNode = vtkMRMLCameraNode::SafeDownCast(node);
@@ -178,12 +193,43 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeChanged(vtkMRMLNode* node)
     return;
     }
 
-  // Slider min/max
-  double tmax = cameraPathNode->GetMaximumT();
-  double tmin = cameraPathNode->GetMinimumT();
-  int framerate = d->fpsSpinBox->value();
-  int numberOfFrames = framerate * int(tmax - tmin);
-  d->timeSlider->setMaximum(numberOfFrames);
+  // Update Slider Range
+  this->updateSliderRange();
+
+  // Empty Table
+  this->emptyKeyFramesTableWidget();
+
+  if (cameraPathNode->GetNumberOfKeyFrames() == 0)
+    {
+    return;
+    }
+
+  // Block signals from table
+  QTableWidget* table = d->keyFramesTableWidget;
+  table->blockSignals(true);
+
+  // Populate Table
+  KeyFrameVector keyFrames = cameraPathNode->GetKeyFrames();
+  for ( vtkIdType i = 0; i < cameraPathNode->GetNumberOfKeyFrames(); ++i )
+    {
+    // Get Key frame info
+    double t = keyFrames.at(i).Time;
+    char* cameraID = keyFrames.at(i).Camera->GetID();
+
+    // Add Key frame in table
+    table->insertRow(table->rowCount());
+
+    QTableWidgetItem* timeItem = new QTableWidgetItem();
+    timeItem->setData(Qt::DisplayRole,t);
+    table->setItem(table->rowCount()-1, 0, timeItem );
+
+    QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(cameraID));
+    cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
+    table->setItem(table->rowCount()-1, 1, cameraItem);
+    }
+
+  // Unblock signals from table
+  table->blockSignals(false);
 
 }
 
@@ -434,8 +480,8 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
     // Empty Table
     this->emptyKeyFramesTableWidget();
 
-    // Update Slider range
-    this->onCameraPathNodeChanged(cameraPathNode);
+    // Update Slider Range
+    this->updateSliderRange();
     }
 }
 
@@ -506,8 +552,8 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
       d->keyFramesTableWidget->removeRow(index);
       }
 
-    // Update Slider range
-    this->onCameraPathNodeChanged(cameraPathNode);
+    // Update Slider Range
+    this->updateSliderRange();
     }
 
   // clear the selection on the table
@@ -670,8 +716,8 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   // Add key frame
   cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
 
-  // Update Slider range
-  this->onCameraPathNodeChanged(cameraPathNode);
+  // Update Slider Range
+  this->updateSliderRange();
 
   // Block signals from table
   d->keyFramesTableWidget->blockSignals(true);
@@ -724,8 +770,8 @@ void qSlicerCameraPathModuleWidget::onCellChanged(int row, int col)
   // Sort Table
   d->keyFramesTableWidget->sortByColumn(0,Qt::AscendingOrder);
 
-  // Update Slider range
-  this->onCameraPathNodeChanged(cameraPathNode);
+  // Update Slider Range
+  this->updateSliderRange();
 }
 
 //-----------------------------------------------------------------------------
