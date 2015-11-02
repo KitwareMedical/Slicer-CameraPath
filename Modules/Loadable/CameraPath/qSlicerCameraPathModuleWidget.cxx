@@ -167,6 +167,11 @@ void qSlicerCameraPathModuleWidget::updateSliderRange()
   vtkMRMLCameraPathNode* cameraPathNode =
       vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
 
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
   double tmax = cameraPathNode->GetMaximumT();
   double tmin = cameraPathNode->GetMinimumT();
   int framerate = d->fpsSpinBox->value();
@@ -199,6 +204,23 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeChanged(vtkMRMLNode* node)
   // Empty Table
   this->emptyKeyFramesTableWidget();
 
+  // Update visibility button
+  d->cameraPathVisibilityPushButton->blockSignals(true);
+  if (cameraPathNode->GetNumberOfKeyFrames() < 2)
+    {
+    d->cameraPathVisibilityPushButton->setChecked(false);
+    d->cameraPathVisibilityPushButton->setEnabled(false);
+    return;
+    }
+  else
+    {
+    int visibility = cameraPathNode->GetPositionSplines()->GetDisplayVisibility();
+    d->cameraPathVisibilityPushButton->setChecked(visibility);
+    d->cameraPathVisibilityPushButton->setEnabled(true);
+    }
+  d->cameraPathVisibilityPushButton->blockSignals(false);
+
+  // Stop here if node empty
   if (cameraPathNode->GetNumberOfKeyFrames() == 0)
     {
     return;
@@ -474,6 +496,12 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
   deleteMsgBox.exec();
   if (deleteMsgBox.clickedButton() == deleteButton)
     {
+    // Update visibility button
+    d->cameraPathVisibilityPushButton->blockSignals(true);
+    d->cameraPathVisibilityPushButton->setChecked(false);
+    d->cameraPathVisibilityPushButton->setEnabled(false);
+    d->cameraPathVisibilityPushButton->blockSignals(false);
+
     // Remove All Keyframes
     cameraPathNode->RemoveKeyFrames();
 
@@ -550,6 +578,15 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
 
       // Remove Table row
       d->keyFramesTableWidget->removeRow(index);
+      }
+
+    // Update visibility button if less than 2 keyframes
+    if(cameraPathNode->GetNumberOfKeyFrames() < 2)
+      {
+      d->cameraPathVisibilityPushButton->blockSignals(true);
+      d->cameraPathVisibilityPushButton->setChecked(false);
+      d->cameraPathVisibilityPushButton->setEnabled(false);
+      d->cameraPathVisibilityPushButton->blockSignals(false);
       }
 
     // Update Slider Range
@@ -718,6 +755,15 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
 
   // Update Slider Range
   this->updateSliderRange();
+
+  // Update visibility button
+  if(cameraPathNode->GetNumberOfKeyFrames() == 2)
+    {
+    d->cameraPathVisibilityPushButton->blockSignals(true);
+    d->cameraPathVisibilityPushButton->setChecked(true);
+    d->cameraPathVisibilityPushButton->setEnabled(true);
+    d->cameraPathVisibilityPushButton->blockSignals(false);
+    }
 
   // Block signals from table
   d->keyFramesTableWidget->blockSignals(true);
