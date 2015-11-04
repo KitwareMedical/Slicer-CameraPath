@@ -374,20 +374,32 @@ void qSlicerCameraPathModuleWidget::onTimeSliderChanged(int frameNbr)
     return;
     }
 
+  // Get Time
   int framerate = d->fpsSpinBox->value();
   double tmin = cameraPathNode->GetMinimumT();
   double t = (frameNbr/(double)framerate) + tmin;
 
+  // Update default camera
   if (cameraPathNode->GetNumberOfKeyFrames() != 0)
     {
     cameraPathNode->GetCameraAt(t, cameraNode);
     cameraNode->ResetClippingRange();
     }
 
+  // Update time label
   std::stringstream stream;
   stream << std::fixed << std::setprecision(1) << t;
   std::string s = stream.str();
   d->timeValueLabel->setText(QString::fromStdString(s));
+
+  // Check if time associated with a keyframe
+  vtkIdType index = cameraPathNode->KeyFrameIndexAt(t);
+  if (index != -1)
+    {
+    // Select row
+    d->keyFramesTableWidget->selectRow(index);
+    this->onItemClicked(d->keyFramesTableWidget->item(index,1));
+    }
 }
 
 //-----------------------------------------------------------------------------
