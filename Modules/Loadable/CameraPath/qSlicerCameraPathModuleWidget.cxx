@@ -793,10 +793,14 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   table->setItem(table->rowCount()-1, 1, cameraItem);
 
   // Sort Table
-  d->keyFramesTableWidget->sortByColumn(0,Qt::AscendingOrder);
+  table->sortByColumn(0,Qt::AscendingOrder);
 
   // Unblock signals from table
-  d->keyFramesTableWidget->blockSignals(false);
+  table->blockSignals(false);
+
+  // Select new row
+  table->selectRow(table->rowCount()-1);
+  this->onItemClicked(cameraItem);
 }
 
 //-----------------------------------------------------------------------------
