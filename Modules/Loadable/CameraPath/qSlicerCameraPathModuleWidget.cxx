@@ -147,7 +147,10 @@ void qSlicerCameraPathModuleWidget::setup()
   d->keyFramesTableWidget->setColumnWidth(2,50);
   d->keyFramesTableWidget->setColumnWidth(3,50);
   connect(d->keyFramesTableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onCellChanged(int, int)));
+  connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onItemClicked(QTableWidgetItem*)));
+
 //  connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onCellClicked(QTableWidgetItem*)));
+
 }
 
 //-----------------------------------------------------------------------------
@@ -334,8 +337,9 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeRemoved(vtkMRMLNode* node)
     d->keyFramesSection->setEnabled(false);
   }
 
-  // Empty Table
+  // Empty Tables
   this->emptyKeyFramesTableWidget();
+  this->emptyCameraTableWidget();
 }
 
 //-----------------------------------------------------------------------------
@@ -505,8 +509,11 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
     // Remove All Keyframes
     cameraPathNode->RemoveKeyFrames();
 
-    // Empty Table
+    // Empty Keyframe Table
     this->emptyKeyFramesTableWidget();
+
+    // Empty Camera Table
+    this->emptyCameraTableWidget();
 
     // Update Slider Range
     this->updateSliderRange();
@@ -588,6 +595,9 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
       d->cameraPathVisibilityPushButton->setEnabled(false);
       d->cameraPathVisibilityPushButton->blockSignals(false);
       }
+
+    // Empty Camera Table
+    this->emptyCameraTableWidget();
 
     // Update Slider Range
     this->updateSliderRange();
@@ -684,18 +694,18 @@ void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
         cameraPathNode->GetKeyFrameCamera(index);
 
     // Update keyframe camera
-    keyframeCameraNode->Copy(defaultCameraNode);
+    keyframeCameraNode->DisableModifiedEventOn();
+    keyframeCameraNode->CopyWithoutModifiedEvent(defaultCameraNode);
     keyframeCameraNode->SetHideFromEditors(1);
     QString cameraPathName(cameraPathNode->GetName());
     QString cameraName(cameraPathName+"_Camera");
     keyframeCameraNode->SetName(cameraName.toStdString().c_str());
+    keyframeCameraNode->DisableModifiedEventOff();
+    keyframeCameraNode->Modified();
 
     // XXX Update splines
     cameraPathNode->SetKeyFrameCamera(index,keyframeCameraNode);
     }
-
-  // clear the selection on the table
-  d->keyFramesTableWidget->clearSelection();
 }
 
 //-----------------------------------------------------------------------------
@@ -749,6 +759,10 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   QString newCameraName(cameraPathName+"_Camera");
   newCameraNode->SetName(newCameraName.toStdString().c_str());
   cameraPathNode->GetScene()->AddNode(newCameraNode.GetPointer());
+
+  // Listen to new camera
+  this->qvtkConnect(newCameraNode.GetPointer(), vtkCommand::ModifiedEvent,
+                    this, SLOT(onKeyFrameCameraModified(vtkObject*)));
 
   // Add key frame
   cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
@@ -821,6 +835,76 @@ void qSlicerCameraPathModuleWidget::onCellChanged(int row, int col)
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onItemClicked(QTableWidgetItem* item)
+{
+  if(!item)
+    {
+    return;
+    }
+
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
+  // Get the selected rows
+  QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
+
+  // Make sure that only one is selected
+  if (selectedItems.size() != 2)
+    {
+    this->emptyCameraTableWidget();
+    return;
+    }
+
+  // Get Keyframe index
+  int index = item->row();
+
+  // Set selected camera
+  d->selectedCameraIDLineEdit->setText(d->keyFramesTableWidget->item(index, 1)->text());
+
+  // Update camera table
+  d->cameraTableWidget->setEnabled(true);
+  this->updateCameraTable(index);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onKeyFrameCameraModified(vtkObject *caller)
+{
+  if (!caller)
+    {
+    return;
+    }
+
+  vtkMRMLCameraNode* camera = vtkMRMLCameraNode::SafeDownCast(caller);
+  if(!camera)
+    {
+    return;
+    }
+
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  // Get the selected rows
+  QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
+
+  // Make sure that only one is selected
+  if (selectedItems.size() != 2)
+    {
+    return;
+    }
+
+  // Get keyframe index
+  int index = selectedItems.at(0)->row();
+
+  // Update camera table
+  this->updateCameraTable(index);
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::emptyKeyFramesTableWidget()
 {
   Q_D(qSlicerCameraPathModuleWidget);
@@ -829,6 +913,60 @@ void qSlicerCameraPathModuleWidget::emptyKeyFramesTableWidget()
     {
     d->keyFramesTableWidget->removeRow(0);
     }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::emptyCameraTableWidget()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  d->selectedCameraIDLineEdit->setText("Please select one keyframe");
+  d->cameraTableWidget->clearContents();
+  d->cameraTableWidget->setEnabled(false);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::updateCameraTable(int index)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
+  // Get keyframe camera info
+  vtkSmartPointer<vtkMRMLCameraNode> keyframeCameraNode =
+      cameraPathNode->GetKeyFrameCamera(index);
+
+  double** cameraInfo = new double*[3];
+  for(int i = 0; i < 3; ++i)
+    {
+    cameraInfo[i] = new double[3];
+    }
+  keyframeCameraNode->GetPosition(cameraInfo[0]);
+  keyframeCameraNode->GetFocalPoint(cameraInfo[1]);
+  keyframeCameraNode->GetViewUp(cameraInfo[2]);
+
+  // Block signals from table
+  d->cameraTableWidget->blockSignals(true);
+
+  // Update info in table
+  for(unsigned int i = 0; i < 3; ++i)
+    {
+    for(unsigned int j = 0; j < 3; ++j)
+      {
+      QTableWidgetItem* item = new QTableWidgetItem();
+      item->setData(Qt::DisplayRole,cameraInfo[i][j]);
+      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+      d->cameraTableWidget->setItem(i, j, item );
+      }
+   }
+
+  // Unblock signals from table
+  d->cameraTableWidget->blockSignals(false);
 }
 
 //-----------------------------------------------------------------------------

@@ -22,6 +22,7 @@
 #include "qSlicerAbstractModuleWidget.h"
 
 #include "qSlicerCameraPathModuleExport.h"
+#include "QTableWidgetItem"
 
 class qSlicerCameraPathModuleWidgetPrivate;
 class vtkMRMLNode;
@@ -39,6 +40,8 @@ public:
   virtual ~qSlicerCameraPathModuleWidget();
 
   void emptyKeyFramesTableWidget();
+  void emptyCameraTableWidget();
+  void updateCameraTable(int index);
   void updateSliderRange();
   void showErrorTimeMsgBox(double time, vtkIdType index);
 
@@ -66,6 +69,9 @@ public slots:
   void onUpdateKeyFrameClicked();
   void onAddKeyFrameClicked();
   void onCellChanged(int row, int col);
+  void onItemClicked(QTableWidgetItem* item);
+
+  void onKeyFrameCameraModified(vtkObject *caller);
 
 
 protected:

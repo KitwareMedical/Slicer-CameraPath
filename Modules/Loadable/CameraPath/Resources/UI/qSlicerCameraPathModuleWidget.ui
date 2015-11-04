@@ -625,14 +625,11 @@
    </item>
    <item>
     <widget class="ctkCollapsibleButton" name="SelectedKeyFrameSection">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text" stdset="0">
       <string>Selected Key Frame</string>
      </property>
      <property name="collapsed" stdset="0">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -661,6 +658,9 @@
       </item>
       <item>
        <widget class="QTableWidget" name="cameraTableWidget">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
