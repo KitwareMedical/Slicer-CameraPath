@@ -266,6 +266,9 @@
            <iconset resource="../qSlicerCameraPathModule.qrc">
             <normaloff>:/Icons/Player/PreviousFrame.png</normaloff>:/Icons/Player/PreviousFrame.png</iconset>
           </property>
+          <property name="autoRepeat">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>
@@ -321,6 +324,9 @@
           <property name="icon">
            <iconset resource="../qSlicerCameraPathModule.qrc">
             <normaloff>:/Icons/Player/NextFrame.png</normaloff>:/Icons/Player/NextFrame.png</iconset>
+          </property>
+          <property name="autoRepeat">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
