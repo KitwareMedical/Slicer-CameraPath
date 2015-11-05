@@ -10,7 +10,7 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkMRML${MODULE_NAME}Node.cxx
   vtkMRMLPointSplineNode.cxx
-  #vtkMRML${MODULE_NAME}StorageNode.cxx
+  vtkMRML${MODULE_NAME}StorageNode.cxx
   )
 
 set(${KIT}_TARGET_LIBRARIES
