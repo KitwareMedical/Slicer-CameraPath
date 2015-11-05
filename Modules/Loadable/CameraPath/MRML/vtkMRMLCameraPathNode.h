@@ -5,7 +5,7 @@
 #include "vtkSlicerCameraPathModuleMRMLExport.h"
 #include "vtkMRMLPointSplineNode.h"
 #include <vtkMRMLCameraNode.h>
-#include <vtkMRMLTransformableNode.h>
+#include <vtkMRMLStorableNode.h>
 class vtkMRMLStorageNode;
 
 // STD includes
@@ -58,7 +58,7 @@ struct timeEqual
 /// \brief MRML node to hold the information about a camera path.
 ///
 class VTK_SLICER_CAMERAPATH_MODULE_MRML_EXPORT vtkMRMLCameraPathNode:
-        public vtkMRMLTransformableNode
+        public vtkMRMLStorableNode
 {
 public:
   typedef vtkMRMLCameraPathNode Self;
@@ -68,7 +68,7 @@ public:
         PATH_UP_TO_DATE};
 
   static vtkMRMLCameraPathNode *New();
-  vtkTypeMacro(vtkMRMLCameraPathNode,vtkMRMLTransformableNode)
+  vtkTypeMacro(vtkMRMLCameraPathNode,vtkMRMLStorableNode)
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   //--------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public:
 
   /// Create default camera path storage node
   /// \sa vtkMRMLCameraPathStorageNode
-  //virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
+  virtual vtkMRMLStorageNode* CreateDefaultStorageNode();
 
   //--------------------------------------------------------------------------
   /// CameraPath methods

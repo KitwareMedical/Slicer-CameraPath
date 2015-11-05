@@ -4,7 +4,7 @@
 #include "vtkMRMLCameraNode.h"
 #include "vtkMRMLCameraPathNode.h"
 #include "vtkMRMLPointSplineNode.h"
-//#include "vtkMRMLCameraPathStorageNode.h"
+#include "vtkMRMLCameraPathStorageNode.h"
 
 // VTK includes
 #include <vtkNew.h>
@@ -126,6 +126,12 @@ void vtkMRMLCameraPathNode::PrintSelf(ostream& os, vtkIndent indent)
       os << indent.GetNextIndent() << "Time: " << keyFrame.Time << "\n";
       os << indent.GetNextIndent() << "Camera: " << keyFrame.Camera->GetID() << "\n";
     }
+}
+
+//-------------------------------------------------------------------------
+vtkMRMLStorageNode* vtkMRMLCameraPathNode::CreateDefaultStorageNode()
+{
+  return vtkMRMLStorageNode::SafeDownCast(vtkMRMLCameraPathStorageNode::New());
 }
 
 //----------------------------------------------------------------------------
