@@ -28,6 +28,7 @@
 #include "vtkSlicerModuleLogic.h"
 
 // MRML includes
+#include "vtkMRMLCameraPathNode.h"
 
 // STD includes
 #include <cstdlib>
@@ -44,6 +45,8 @@ public:
   static vtkSlicerCameraPathLogic *New();
   vtkTypeMacro(vtkSlicerCameraPathLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  char* LoadCameraPath(const char *fileName, const char *nodeName);
 
 protected:
   vtkSlicerCameraPathLogic();

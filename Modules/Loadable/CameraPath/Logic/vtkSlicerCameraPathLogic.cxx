@@ -18,6 +18,7 @@
 // CameraPath Logic includes
 #include "vtkSlicerCameraPathLogic.h"
 #include "vtkMRMLCameraPathNode.h"
+#include "vtkMRMLCameraPathStorageNode.h"
 #include "vtkMRMLPointSplineNode.h"
 
 // MRML includes
@@ -68,6 +69,7 @@ void vtkSlicerCameraPathLogic::RegisterNodes()
   vtkMRMLScene *scene = this->GetMRMLScene();
 
   scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLCameraPathNode>::New());
+  scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLCameraPathStorageNode>::New());
   scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLPointSplineNode>::New());
 }
 
@@ -117,4 +119,92 @@ void vtkSlicerCameraPathLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
     vtkDebugMacro("OnMRMLSceneNodeRemoved: Have a vtkMRMLPointSplineNode node");
     vtkUnObserveMRMLNodeMacro(node);
   }
+}
+
+//---------------------------------------------------------------------------
+char* vtkSlicerCameraPathLogic::LoadCameraPath(const char *fileName, const char *nodeName)
+{
+  char *nodeIDs = NULL;
+  std::string idList;
+
+  if (!fileName)
+    {
+    vtkErrorMacro("LoadCameraPath: null file name, cannot load");
+    return NULL;
+    }
+  if (fileName[0] == '\0')
+    {
+    vtkErrorMacro("LoadCameraPath: empty file name, cannot load");
+    return NULL;
+    }
+  if (!this->GetMRMLScene())
+    {
+    vtkErrorMacro("LoadCameraPath: no MRML scene, cannot load");
+    return NULL;
+    }
+
+  // turn on batch processing
+  this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
+
+  // storage node
+  vtkNew<vtkMRMLCameraPathStorageNode> storageNode;
+  storageNode->SetFileName(fileName);
+
+  // camera path node
+  vtkNew<vtkMRMLCameraPathNode> cameraPathNode;
+  cameraPathNode->SetName(nodeName);
+
+  // adding nodes to scene
+  this->GetMRMLScene()->AddNode(storageNode.GetPointer());
+  this->GetMRMLScene()->AddNode(cameraPathNode.GetPointer());
+  idList += std::string(cameraPathNode->GetID());
+/*
+  // Already added ?
+  this->GetMRMLScene()->AddNode(cameraPathNode->GetPositionSplines());
+  idList += std::string(",");
+  idList += std::string(cameraPathNode->GetPositionSplines()->GetID());
+
+  this->GetMRMLScene()->AddNode(cameraPathNode->GetFocalPointSplines());
+  idList += std::string(",");
+  idList += std::string(cameraPathNode->GetFocalPointSplines()->GetID());
+
+  this->GetMRMLScene()->AddNode(cameraPathNode->GetViewUpSplines());
+  idList += std::string(",");
+  idList += std::string(cameraPathNode->GetViewUpSplines()->GetID());
+*/
+
+  // read the file
+  if (!storageNode->ReadData(cameraPathNode.GetPointer()))
+    {
+    vtkErrorMacro("LoadCameraPath: coud not read data");
+    this->GetMRMLScene()->RemoveNode(cameraPathNode.GetPointer());
+    this->GetMRMLScene()->RemoveNode(storageNode.GetPointer());
+    return NULL;
+    }
+
+  // adding camera nodes to scene
+  for (vtkIdType i = 0; i < cameraPathNode->GetNumberOfKeyFrames(); ++i)
+    {
+    vtkMRMLCameraNode* cameraNode = cameraPathNode->GetKeyFrameCamera(i);
+    this->GetMRMLScene()->AddNode(cameraNode);
+    cameraNode->SetHideFromEditors(1);
+    idList += std::string(",");
+    idList += std::string(cameraNode->GetID());
+    }
+
+  // removing storage node
+  this->GetMRMLScene()->RemoveNode(storageNode.GetPointer());
+
+  // turn off batch processing
+  this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
+
+
+  // return IDs
+  if (idList.length())
+    {
+    nodeIDs = (char *)malloc(sizeof(char) * (idList.length() + 1));
+    strcpy(nodeIDs, idList.c_str());
+    }
+
+  return nodeIDs;
 }
