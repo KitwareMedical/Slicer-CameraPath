@@ -21,9 +21,15 @@
 // CameraPath Logic includes
 #include <vtkSlicerCameraPathLogic.h>
 
+// QTGUI includes
+#include <qSlicerApplication.h>
+#include <qSlicerIOManager.h>
+#include <qSlicerNodeWriter.h>
+
 // CameraPath includes
 #include "qSlicerCameraPathModule.h"
 #include "qSlicerCameraPathModuleWidget.h"
+#include "qSlicerCameraPathReader.h"
 
 //-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(qSlicerCameraPathModule, qSlicerCameraPathModule);
@@ -101,6 +107,22 @@ QStringList qSlicerCameraPathModule::dependencies() const
 void qSlicerCameraPathModule::setup()
 {
   this->Superclass::setup();
+
+  // Reader
+  qSlicerCameraPathReader* cameraPathReader =
+      new qSlicerCameraPathReader(vtkSlicerCameraPathLogic::SafeDownCast(this->logic()), this);
+
+  // Writer
+  qSlicerNodeWriter* cameraPathWriter =
+      new qSlicerNodeWriter("CameraPath Keyframes",
+                            cameraPathReader->fileType(),
+                            QStringList() << "vtkMRMLCameraPathNode",
+                            false, this);
+
+  // IO Manager
+  qSlicerIOManager* ioManager = qSlicerApplication::application()->ioManager();
+  ioManager->registerIO(cameraPathReader);
+  ioManager->registerIO(cameraPathWriter);
 }
 
 //-----------------------------------------------------------------------------
