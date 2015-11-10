@@ -187,6 +187,15 @@ void vtkMRMLPointSplineNode::UpdatePolyData(int framerate)
 {
   double tmin = this->GetMinimumT();
   double tmax = this->GetMaximumT();
+
+  if(tmin == tmax)
+    {
+    vtkNew<vtkPolyData> emptyPolydata;
+    this->SetAndObservePolyData(emptyPolydata.GetPointer());
+    this->Modified();
+    return;
+    }
+
   int numSplinePoints = framerate * int(tmax - tmin);
 
   vtkSmartPointer<vtkPoints> splinePoints = vtkSmartPointer<vtkPoints>::New();

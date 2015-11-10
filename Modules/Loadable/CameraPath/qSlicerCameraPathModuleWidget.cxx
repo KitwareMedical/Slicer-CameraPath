@@ -127,8 +127,6 @@ void qSlicerCameraPathModuleWidget::setup()
   this->Superclass::setup();
 
   // MRML Nodes combobox
-  connect( d->defaultCameraComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-           this, SLOT(onDefaultCameraNodeChanged(vtkMRMLNode*)));
   connect( d->cameraPathComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
            this, SLOT(onCameraPathNodeChanged(vtkMRMLNode*)));
   connect( d->cameraPathComboBox, SIGNAL(currentNodeRenamed(QString)),
@@ -200,18 +198,17 @@ void qSlicerCameraPathModuleWidget::updateSliderRange()
     return;
     }
 
+  if (cameraPathNode->GetNumberOfKeyFrames() < 2)
+    {
+    d->timeSlider->setMaximum(0);
+    return;
+    }
+
   double tmax = cameraPathNode->GetMaximumT();
   double tmin = cameraPathNode->GetMinimumT();
   int framerate = d->fpsSpinBox->value();
   int numberOfFrames = framerate * int(tmax - tmin);
   d->timeSlider->setMaximum(numberOfFrames);
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerCameraPathModuleWidget::onDefaultCameraNodeChanged(vtkMRMLNode* node)
-{
-  //vtkMRMLCameraNode* cameraNode = vtkMRMLCameraNode::SafeDownCast(node);
-  //TODO
 }
 
 //-----------------------------------------------------------------------------
