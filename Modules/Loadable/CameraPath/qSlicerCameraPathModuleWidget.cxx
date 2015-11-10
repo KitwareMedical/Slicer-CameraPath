@@ -1120,6 +1120,9 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
     }
 
   // Create progress dialog
+  d->flyThroughSection->setEnabled(false);
+  d->keyFramesSection->setEnabled(false);
+  d->exportSection->setEnabled(false);
   QProgressDialog progressDialog("Export to "+path, "Cancel",
                            d->timeSlider->minimum(), d->timeSlider->maximum(),
                            this);
@@ -1165,6 +1168,9 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
     if (progressDialog.wasCanceled())
       {
       qWarning() <<"Export canceled";
+      d->flyThroughSection->setEnabled(true);
+      d->keyFramesSection->setEnabled(true);
+      d->exportSection->setEnabled(true);
       break;
       }
   }
@@ -1181,6 +1187,10 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
   // Back to screen rendering
   renderWindow->OffScreenRenderingOff();
 
+  // Enable module widget
+  d->flyThroughSection->setEnabled(true);
+  d->keyFramesSection->setEnabled(true);
+  d->exportSection->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
