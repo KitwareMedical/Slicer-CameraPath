@@ -24,6 +24,10 @@
 #include "qSlicerCameraPathModuleExport.h"
 #include "QTableWidgetItem"
 
+//VTK
+#include "vtkRenderWindow.h"
+#include "vtkMRMLViewNode.h"
+
 class qSlicerCameraPathModuleWidgetPrivate;
 class vtkMRMLNode;
 
@@ -44,6 +48,10 @@ public:
   void updateCameraTable(int index);
   void updateSliderRange();
   void showErrorTimeMsgBox(double time, vtkIdType index);
+  vtkRenderWindow* getMRMLViewRenderWindow(vtkMRMLViewNode *viewNode);
+
+  enum ExportType{ VIDEOCLIP=0, SCREENSHOTS};
+  enum ExportQuality{ LOW=0, MEDIUM, HIGH};
 
 public slots:
 
@@ -73,6 +81,11 @@ public slots:
 
   void onKeyFrameCameraModified(vtkObject *caller);
 
+  void onViewNodeChanged(vtkMRMLNode* node);
+  void onRenderWindowModified(vtkObject *caller);
+  void onCurrentSizeClicked(bool);
+  void onCustomSizeClicked(bool);
+  void onRecordClicked();
 
 protected:
   QScopedPointer<qSlicerCameraPathModuleWidgetPrivate> d_ptr;

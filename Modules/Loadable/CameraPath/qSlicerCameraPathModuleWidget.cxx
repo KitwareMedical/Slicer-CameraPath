@@ -19,9 +19,12 @@
 #include <QDebug>
 #include <QTimer>
 #include <QInputDialog>
+#include <QtGlobal>
+#include <QProgressDialog>
 
 // CTK includes
 #include "ctkMessageBox.h"
+#include "ctkFileDialog.h"
 
 // SlicerQt includes
 #include "qSlicerCameraPathModuleWidget.h"
@@ -33,7 +36,20 @@
 
 // VTK includes
 #include "vtkNew.h"
+#include "vtkCamera.h"
 #include "vtkMRMLScene.h"
+
+// Test Export
+#include "vtkMRMLViewNode.h"
+#include "qSlicerApplication.h"
+#include "qSlicerLayoutManager.h"
+#include "qMRMLLayoutViewFactory.h"
+#include "qMRMLThreeDWidget.h"
+#include "qMRMLThreeDView.h"
+#include "vtkRenderWindow.h"
+#include "vtkWindowToImageFilter.h"
+#include "vtkPNGWriter.h"
+#include "vtkFFMPEGWriter.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -110,6 +126,7 @@ void qSlicerCameraPathModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
+  // MRML Nodes combobox
   connect( d->defaultCameraComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
            this, SLOT(onDefaultCameraNodeChanged(vtkMRMLNode*)));
   connect( d->cameraPathComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
@@ -123,6 +140,7 @@ void qSlicerCameraPathModuleWidget::setup()
   connect( d->cameraPathVisibilityPushButton, SIGNAL(toggled(bool)),
            this, SLOT(onCameraPathVisibilityToggled(bool)) );
 
+  // Slider + play buttons
   connect( d->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(onTimeSliderChanged(int)) );
   connect( d->firstFramePushButton, SIGNAL(clicked()), this, SLOT(onFirstFrameClicked()) );
   connect( d->previousFramePushButton, SIGNAL(clicked()), this, SLOT(onPreviousFrameClicked()) );
@@ -134,12 +152,14 @@ void qSlicerCameraPathModuleWidget::setup()
   this->setTimerInterval(d->fpsSpinBox->value());
   connect( d->Timer, SIGNAL(timeout()), this, SLOT(playToNextFrame()));
 
+  // Keyframes buttons
   connect( d->deleteAllPushButton, SIGNAL(clicked()), this, SLOT(onDeleteAllClicked()) );
   connect( d->deleteSelectedPushButton, SIGNAL(clicked()), this, SLOT(onDeleteSelectedClicked()) );
   connect( d->goToKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onGoToKeyFrameClicked()) );
   connect( d->updateKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onUpdateKeyFrameClicked()) );
   connect( d->addKeyFramePushButton, SIGNAL(clicked()), this, SLOT(onAddKeyFrameClicked()) );
 
+  // Keyframes table widget
   d->keyFramesTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   d->keyFramesTableWidget->setColumnWidth(0,80);
   d->keyFramesTableWidget->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
@@ -149,7 +169,12 @@ void qSlicerCameraPathModuleWidget::setup()
   connect(d->keyFramesTableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onCellChanged(int, int)));
   connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onItemClicked(QTableWidgetItem*)));
 
-//  connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onCellClicked(QTableWidgetItem*)));
+  // Export
+  connect( d->viewComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+           this, SLOT(onViewNodeChanged(vtkMRMLNode*)));
+  connect( d->exportCurrentSizeRadioButton, SIGNAL(clicked(bool)), this, SLOT(onCurrentSizeClicked(bool)) );
+  connect( d->exportCustomSizeRadioButton, SIGNAL(clicked(bool)), this, SLOT(onCustomSizeClicked(bool)) );
+  connect( d->exportPushButton, SIGNAL(clicked()), this, SLOT(onRecordClicked()) );
 
 }
 
@@ -309,6 +334,7 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeAdded(vtkMRMLNode* node)
 
   // Show keyframes section
   d->keyFramesSection->setEnabled(true);
+  d->exportSection->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -335,6 +361,7 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeRemoved(vtkMRMLNode* node)
   if (d->cameraPathComboBox->nodeCount() == 1)
   {
     d->keyFramesSection->setEnabled(false);
+    d->exportSection->setEnabled(false);
   }
 
   // Empty Tables
@@ -921,6 +948,245 @@ void qSlicerCameraPathModuleWidget::onKeyFrameCameraModified(vtkObject *caller)
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onViewNodeChanged(vtkMRMLNode* node)
+{
+  vtkMRMLViewNode* viewNode = vtkMRMLViewNode::SafeDownCast(node);
+  if (!viewNode)
+    {
+    return;
+    }
+
+  vtkRenderWindow* renderWindow = this->getMRMLViewRenderWindow(viewNode);
+
+  // Listen to renderWindow
+  // XXX TODO : remove connection when viewnode changed
+  // (store the current renderwindow to do this?)
+  this->qvtkConnect(renderWindow, vtkCommand::ModifiedEvent,
+                    this, SLOT(onRenderWindowModified(vtkObject*)));
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onRenderWindowModified(vtkObject *caller)
+{
+  if (!caller)
+    {
+    return;
+    }
+
+  vtkRenderWindow* renderWindow = vtkRenderWindow::SafeDownCast(caller);
+  if(!renderWindow)
+    {
+    return;
+    }
+
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  // Update size boxes
+  if(d->exportCurrentSizeRadioButton->isChecked())
+    {
+    int* windowSize = renderWindow->GetSize();
+    d->exportWidthSpinBox->setValue(windowSize[0]);
+    d->exportHeightSpinBox->setValue(windowSize[1]);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCurrentSizeClicked(bool checked)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  if (checked)
+    {
+    // Disable size boxes
+    d->exportWidthSpinBox->setEnabled(false);
+    d->exportHeightSpinBox->setEnabled(false);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCustomSizeClicked(bool checked)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  if (checked)
+    {
+    d->exportWidthSpinBox->setEnabled(true);
+    d->exportHeightSpinBox->setEnabled(true);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onRecordClicked()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  vtkMRMLViewNode* viewNode =
+          vtkMRMLViewNode::SafeDownCast(d->viewComboBox->currentNode());
+
+  if (!cameraPathNode || !viewNode)
+    {
+    return;
+    }
+
+  // Get Render Window
+  vtkRenderWindow* renderWindow = this->getMRMLViewRenderWindow(viewNode);
+  if (!renderWindow)
+    {
+    return;
+    }
+
+  // Get Export type and Export quality
+  const int exportType = d->exportTypeComboBox->currentIndex();
+  const int exportQuality = d->exportQualityComboBox->currentIndex();
+
+  // Get File name
+  QString fileName;
+  QString path;
+  QString baseName;
+  QString suffix;
+  if (exportType == VIDEOCLIP)
+    {
+    fileName = ctkFileDialog::getSaveFileName(this, tr("Save Video Clip"),".",tr("Videos (*.mkv *.avi)"));
+    QFileInfo fileInfo(fileName);
+    path = fileInfo.path();
+    suffix = fileInfo.suffix();
+    if(!fileName.isEmpty() && suffix != "mkv" && suffix != "avi")
+      {
+      qWarning() << "Extension incorrect, using .mkv instead";
+      fileName += ".mkv";
+      }
+    }
+  else if (exportType == SCREENSHOTS)
+    {
+    fileName = ctkFileDialog::getSaveFileName(this, tr("Save Screenshot Files"),".",tr("Images (*.png)"));
+    QFileInfo fileInfo(fileName);
+    path = fileInfo.path();
+    baseName = fileInfo.baseName();
+    suffix = fileInfo.suffix();
+    if(!fileName.isEmpty() && suffix != "png" && suffix != "PNG")
+      {
+      qWarning() << "Extension incorrect, using .png instead";
+      suffix = "png";
+      }
+    }
+
+  if (fileName.isEmpty())
+    {
+    return;
+    }
+
+  // Enable OffScreen Rendering
+  renderWindow->OffScreenRenderingOn();
+
+  // Set renderWindow size
+  int* windowSize = renderWindow->GetSize();
+  int W = windowSize[0];
+  int H = windowSize[1];
+  if(d->exportCustomSizeRadioButton->isChecked())
+    {
+    renderWindow->SetSize(d->exportWidthSpinBox->value(),d->exportHeightSpinBox->value());
+    }
+
+  // Get Image
+  vtkNew<vtkWindowToImageFilter> w2i;
+  w2i->SetInput(renderWindow);
+
+  // Create Writers
+  vtkNew<vtkPNGWriter> imageWriter;
+  if(exportType == SCREENSHOTS)
+    {
+    imageWriter->SetInputConnection(w2i->GetOutputPort());
+    switch(exportQuality){
+    case LOW:
+      imageWriter->SetCompressionLevel(9);
+      break;
+    case MEDIUM:
+      imageWriter->SetCompressionLevel(5);
+      break;
+    case HIGH:
+      imageWriter->SetCompressionLevel(1);
+      break;
+      }
+    }
+
+  vtkNew<vtkFFMPEGWriter> FFMPEGWriter;
+  if(exportType == VIDEOCLIP)
+    {
+    FFMPEGWriter->SetInputConnection(w2i->GetOutputPort());
+    FFMPEGWriter->SetQuality(exportQuality);
+    FFMPEGWriter->SetFileName(fileName.toStdString().c_str());
+    FFMPEGWriter->SetRate(d->fpsSpinBox->value());
+    FFMPEGWriter->Start();
+    }
+
+  // Create progress dialog
+  QProgressDialog progressDialog("Export to "+path, "Cancel",
+                           d->timeSlider->minimum(), d->timeSlider->maximum(),
+                           this);
+  progressDialog.show();
+  progressDialog.setWindowModality(Qt::WindowModal);
+
+  // Write frame by frame
+  for(int i = d->timeSlider->minimum();
+      i <= d->timeSlider->maximum();
+      ++i)
+  {
+    // Render at next frame value
+    d->timeSlider->setValue(i);
+    renderWindow->Render();
+
+    // Update filter
+    w2i->Modified();
+    w2i->Update();
+
+    // Write screenshot
+    if(exportType == SCREENSHOTS)
+      {
+      std::stringstream ss;
+      ss << path.toStdString() << "/"
+         << baseName.toStdString() << "_" << i
+         << "." << suffix.toStdString();
+      const std::string s = ss.str();
+      const char* screenshotFileName = s.c_str();
+      qDebug() <<"Writing at "<< screenshotFileName;
+      imageWriter->SetFileName(screenshotFileName);
+      imageWriter->Write();
+      }
+
+    // Write video frame
+    if(exportType == VIDEOCLIP)
+      {
+      qDebug() <<"Writing frame "<< i << "/" << d->timeSlider->maximum();
+      FFMPEGWriter->Write();
+      }
+
+    // Update progress dialog
+    progressDialog.setValue(i);
+    if (progressDialog.wasCanceled())
+      {
+      qWarning() <<"Export canceled";
+      break;
+      }
+  }
+
+  // End video
+  if(exportType == VIDEOCLIP)
+    {
+    FFMPEGWriter->End();
+    }
+
+  // Reset renderwindow size
+  renderWindow->SetSize(W, H);
+
+  // Back to screen rendering
+  renderWindow->OffScreenRenderingOff();
+
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::emptyKeyFramesTableWidget()
 {
   Q_D(qSlicerCameraPathModuleWidget);
@@ -1003,4 +1269,17 @@ void qSlicerCameraPathModuleWidget::showErrorTimeMsgBox(double time, vtkIdType i
   errorTimeMsgBox.setDefaultButton(okButton);
   errorTimeMsgBox.setIcon(QMessageBox::Warning);
   errorTimeMsgBox.exec();
+}
+
+//-----------------------------------------------------------------------------
+vtkRenderWindow* qSlicerCameraPathModuleWidget::getMRMLViewRenderWindow(vtkMRMLViewNode* viewNode)
+{
+//  const char* viewNodeID = cameraNode->GetActiveTag();
+//  vtkMRMLViewNode* viewNode = vtkMRMLViewNode::SafeDownCast(cameraNode->GetScene()->GetNodeByID(viewNodeID));
+
+  qSlicerLayoutManager *layoutManager = qSlicerApplication::application()->layoutManager();
+  qMRMLThreeDWidget* threeDWidget = qobject_cast<qMRMLThreeDWidget*>(layoutManager->mrmlViewFactory("vtkMRMLViewNode")->viewWidget(viewNode));
+  vtkRenderWindow *renderWindow = threeDWidget->threeDView()->renderWindow();
+
+  return renderWindow;
 }
