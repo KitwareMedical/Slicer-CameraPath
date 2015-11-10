@@ -410,7 +410,7 @@ void qSlicerCameraPathModuleWidget::onTimeSliderChanged(int frameNbr)
   if (cameraPathNode->GetNumberOfKeyFrames() != 0)
     {
     cameraPathNode->GetCameraAt(t, cameraNode);
-    cameraNode->ResetClippingRange();
+    cameraNode->GetCamera()->SetClippingRange(0.1,cameraNode->GetCamera()->GetDistance()*6);
     }
 
   // Update time label
