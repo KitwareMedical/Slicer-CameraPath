@@ -831,15 +831,15 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
   table->setItem(table->rowCount()-1, 1, cameraItem);
 
+  // Select new row
+  table->selectRow(table->rowCount()-1);
+  this->onItemClicked(cameraItem);
+
   // Sort Table
   table->sortByColumn(0,Qt::AscendingOrder);
 
   // Unblock signals from table
   table->blockSignals(false);
-
-  // Select new row
-  table->selectRow(table->rowCount()-1);
-  this->onItemClicked(cameraItem);
 }
 
 //-----------------------------------------------------------------------------
