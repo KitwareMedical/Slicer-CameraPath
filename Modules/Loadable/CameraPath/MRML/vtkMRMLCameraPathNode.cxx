@@ -531,7 +531,6 @@ void vtkMRMLCameraPathNode::SortKeyFrames()
 {
   if( this->GetNumberOfKeyFrames() < 2)
     {
-    vtkWarningMacro("No need to sort : there is less than two key frames");
     return;
     }
   std::sort(this->Internal->KeyFrames.begin(),

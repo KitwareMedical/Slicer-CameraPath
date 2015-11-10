@@ -55,8 +55,6 @@ public:
 
 public slots:
 
-
-  void onDefaultCameraNodeChanged(vtkMRMLNode* node);
   void onCameraPathNodeChanged(vtkMRMLNode* node);
   void onCameraPathNodeRenamed(QString nodeName);
   void onCameraPathNodeAdded(vtkMRMLNode* node);
