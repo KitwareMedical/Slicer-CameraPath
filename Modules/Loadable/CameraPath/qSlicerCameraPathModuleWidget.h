@@ -43,6 +43,7 @@ public:
   qSlicerCameraPathModuleWidget(QWidget *parent=0);
   virtual ~qSlicerCameraPathModuleWidget();
 
+  void populateKeyFramesTableWidget();
   void emptyKeyFramesTableWidget();
   void emptyCameraTableWidget();
   void updateCameraTable(int index);
@@ -56,8 +57,10 @@ public:
 public slots:
 
   void onCameraPathNodeChanged(vtkMRMLNode* node);
+  void onCameraPathNodeModified(vtkObject* caller);
   void onCameraPathNodeRenamed(QString nodeName);
   void onCameraPathNodeAdded(vtkMRMLNode* node);
+  void onCameraPathNodeAddedByUser(vtkMRMLNode* node);
   void onCameraPathNodeRemoved(vtkMRMLNode* node);
   void onCameraPathVisibilityToggled(bool visibility);
 

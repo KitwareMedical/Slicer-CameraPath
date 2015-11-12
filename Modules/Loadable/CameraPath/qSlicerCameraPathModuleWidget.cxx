@@ -133,6 +133,8 @@ void qSlicerCameraPathModuleWidget::setup()
            this, SLOT(onCameraPathNodeRenamed(QString)));
   connect( d->cameraPathComboBox, SIGNAL(nodeAdded(vtkMRMLNode*)),
            this, SLOT(onCameraPathNodeAdded(vtkMRMLNode*)));
+  connect( d->cameraPathComboBox, SIGNAL(nodeAddedByUser(vtkMRMLNode*)),
+           this, SLOT(onCameraPathNodeAddedByUser(vtkMRMLNode*)));
   connect( d->cameraPathComboBox, SIGNAL(nodeAboutToBeRemoved(vtkMRMLNode*)),
            this, SLOT(onCameraPathNodeRemoved(vtkMRMLNode*)));
   connect( d->cameraPathVisibilityPushButton, SIGNAL(toggled(bool)),
@@ -220,11 +222,28 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeChanged(vtkMRMLNode* node)
     return;
     }
 
+  // Listen to camerapathnode
+  this->qvtkConnect(cameraPathNode, vtkCommand::ModifiedEvent,
+                    this, SLOT(onCameraPathNodeModified(vtkObject*)));
+
+  // call modified
+  this->onCameraPathNodeModified(cameraPathNode);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCameraPathNodeModified(vtkObject* caller)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode = vtkMRMLCameraPathNode::SafeDownCast(caller);
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
   // Update Slider Range
   this->updateSliderRange();
-
-  // Empty Table
-  this->emptyKeyFramesTableWidget();
 
   // Update visibility button
   d->cameraPathVisibilityPushButton->blockSignals(true);
@@ -232,7 +251,6 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeChanged(vtkMRMLNode* node)
     {
     d->cameraPathVisibilityPushButton->setChecked(false);
     d->cameraPathVisibilityPushButton->setEnabled(false);
-    return;
     }
   else
     {
@@ -242,39 +260,8 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeChanged(vtkMRMLNode* node)
     }
   d->cameraPathVisibilityPushButton->blockSignals(false);
 
-  // Stop here if node empty
-  if (cameraPathNode->GetNumberOfKeyFrames() == 0)
-    {
-    return;
-    }
-
-  // Block signals from table
-  QTableWidget* table = d->keyFramesTableWidget;
-  table->blockSignals(true);
-
-  // Populate Table
-  KeyFrameVector keyFrames = cameraPathNode->GetKeyFrames();
-  for ( vtkIdType i = 0; i < cameraPathNode->GetNumberOfKeyFrames(); ++i )
-    {
-    // Get Key frame info
-    double t = keyFrames.at(i).Time;
-    char* cameraID = keyFrames.at(i).Camera->GetID();
-
-    // Add Key frame in table
-    table->insertRow(table->rowCount());
-
-    QTableWidgetItem* timeItem = new QTableWidgetItem();
-    timeItem->setData(Qt::DisplayRole,t);
-    table->setItem(table->rowCount()-1, 0, timeItem );
-
-    QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(cameraID));
-    cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
-    table->setItem(table->rowCount()-1, 1, cameraItem);
-    }
-
-  // Unblock signals from table
-  table->blockSignals(false);
-
+  // Populate table
+  this->populateKeyFramesTableWidget();
 }
 
 //-----------------------------------------------------------------------------
@@ -311,6 +298,26 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeAdded(vtkMRMLNode* node)
     return;
     }
 
+  // Show keyframes section
+  d->keyFramesSection->setEnabled(true);
+  d->exportSection->setEnabled(true);
+
+  // Set as current node in combobox
+  d->cameraPathComboBox->setCurrentNode(cameraPathNode);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::onCameraPathNodeAddedByUser(vtkMRMLNode* node)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode = vtkMRMLCameraPathNode::SafeDownCast(node);
+
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
   // Add PointSplines to Scene
   if (cameraPathNode->GetScene()
       && !cameraPathNode->GetPositionSplines()->GetScene()
@@ -325,10 +332,6 @@ void qSlicerCameraPathModuleWidget::onCameraPathNodeAdded(vtkMRMLNode* node)
 
   // Update PointSplines Name
   this->onCameraPathNodeRenamed(QString(cameraPathNode->GetName()));
-
-  // Show keyframes section
-  d->keyFramesSection->setEnabled(true);
-  d->exportSection->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -533,23 +536,11 @@ void qSlicerCameraPathModuleWidget::onDeleteAllClicked()
   deleteMsgBox.exec();
   if (deleteMsgBox.clickedButton() == deleteButton)
     {
-    // Update visibility button
-    d->cameraPathVisibilityPushButton->blockSignals(true);
-    d->cameraPathVisibilityPushButton->setChecked(false);
-    d->cameraPathVisibilityPushButton->setEnabled(false);
-    d->cameraPathVisibilityPushButton->blockSignals(false);
-
     // Remove All Keyframes
     cameraPathNode->RemoveKeyFrames();
 
-    // Empty Keyframe Table
-    this->emptyKeyFramesTableWidget();
-
     // Empty Camera Table
     this->emptyCameraTableWidget();
-
-    // Update Slider Range
-    this->updateSliderRange();
     }
 }
 
@@ -616,24 +607,10 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
       // Remove Keyframe
       cameraPathNode->RemoveKeyFrame(index);
 
-      // Remove Table row
-      d->keyFramesTableWidget->removeRow(index);
-      }
-
-    // Update visibility button if less than 2 keyframes
-    if(cameraPathNode->GetNumberOfKeyFrames() < 2)
-      {
-      d->cameraPathVisibilityPushButton->blockSignals(true);
-      d->cameraPathVisibilityPushButton->setChecked(false);
-      d->cameraPathVisibilityPushButton->setEnabled(false);
-      d->cameraPathVisibilityPushButton->blockSignals(false);
       }
 
     // Empty Camera Table
     this->emptyCameraTableWidget();
-
-    // Update Slider Range
-    this->updateSliderRange();
     }
 
   // clear the selection on the table
@@ -800,40 +777,10 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
   // Add key frame
   cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
 
-  // Update Slider Range
-  this->updateSliderRange();
-
-  // Update visibility button
-  if(cameraPathNode->GetNumberOfKeyFrames() == 2)
-    {
-    d->cameraPathVisibilityPushButton->blockSignals(true);
-    d->cameraPathVisibilityPushButton->setChecked(true);
-    d->cameraPathVisibilityPushButton->setEnabled(true);
-    d->cameraPathVisibilityPushButton->blockSignals(false);
-    }
-
-  // Block signals from table
-  d->keyFramesTableWidget->blockSignals(true);
-
-  // Add Key frame in table
-  QTableWidget* table = d->keyFramesTableWidget;
-  table->insertRow(table->rowCount());
-  QTableWidgetItem* timeItem = new QTableWidgetItem();
-  timeItem->setData(Qt::DisplayRole,t);
-  table->setItem(table->rowCount()-1, 0, timeItem );
-  QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(newCameraNode->GetID()));
-  cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
-  table->setItem(table->rowCount()-1, 1, cameraItem);
-
   // Select new row
-  table->selectRow(table->rowCount()-1);
-  this->onItemClicked(cameraItem);
-
-  // Sort Table
-  table->sortByColumn(0,Qt::AscendingOrder);
-
-  // Unblock signals from table
-  table->blockSignals(false);
+  index = cameraPathNode->KeyFrameIndexAt(t);
+  d->keyFramesTableWidget->selectRow(index);
+  this->onItemClicked(d->keyFramesTableWidget->item(index,1));
 }
 
 //-----------------------------------------------------------------------------
@@ -856,19 +803,13 @@ void qSlicerCameraPathModuleWidget::onCellChanged(int row, int col)
   vtkIdType index = cameraPathNode->KeyFrameIndexAt(time);
   if(index != -1)
     {
+    this->populateKeyFramesTableWidget();
     this->showErrorTimeMsgBox(time,index);
-    // XXX Need to set back the former value!!
     return;
     }
 
   // Set Key Frame Time
   cameraPathNode->SetKeyFrameTime(row,time);
-
-  // Sort Table
-  d->keyFramesTableWidget->sortByColumn(0,Qt::AscendingOrder);
-
-  // Update Slider Range
-  this->updateSliderRange();
 }
 
 //-----------------------------------------------------------------------------
@@ -1191,6 +1132,56 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
   d->exportSection->setEnabled(true);
 }
 
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::populateKeyFramesTableWidget()
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+  if (!cameraPathNode)
+    {
+    return;
+    }
+
+  // Empty Table
+  this->emptyKeyFramesTableWidget();
+
+  // Return if no keyframes
+  if (cameraPathNode->GetNumberOfKeyFrames() == 0)
+    {
+    return;
+    }
+
+  // Block signals from table
+  QTableWidget* table = d->keyFramesTableWidget;
+  table->blockSignals(true);
+
+  // Populate Table
+  KeyFrameVector keyFrames = cameraPathNode->GetKeyFrames();
+  for ( vtkIdType i = 0; i < cameraPathNode->GetNumberOfKeyFrames(); ++i )
+    {
+    // Get Key frame info
+    double t = keyFrames.at(i).Time;
+    char* cameraID = keyFrames.at(i).Camera->GetID();
+
+    // Add Key frame in table
+    table->insertRow(table->rowCount());
+
+    QTableWidgetItem* timeItem = new QTableWidgetItem();
+    timeItem->setData(Qt::DisplayRole,t);
+    table->setItem(table->rowCount()-1, 0, timeItem );
+
+    QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(cameraID));
+    cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
+    table->setItem(table->rowCount()-1, 1, cameraItem);
+    }
+
+  // Unblock signals from table
+  table->blockSignals(false);
+}
+
 //-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::emptyKeyFramesTableWidget()
 {
@@ -1267,7 +1258,7 @@ void qSlicerCameraPathModuleWidget::showErrorTimeMsgBox(double time, vtkIdType i
       QString("A keyframe already exists for t = ")
       + QString::number(time)
       + QString(" at row # ")
-      + QString::number(index);
+      + QString::number(index+1);
   errorTimeMsgBox.setText(labelText);
   QPushButton *okButton =
     errorTimeMsgBox.addButton(tr("Ok"), QMessageBox::AcceptRole);
