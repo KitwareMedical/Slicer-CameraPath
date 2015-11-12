@@ -141,7 +141,7 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="../../../../../../debug-iVSPlan/Slicer/Libs/MRML/Widgets/Resources/qMRMLWidgets.qrc">
+           <iconset resource="../qSlicerCameraPathModule.qrc">
             <normaloff>:/Icons/VisibleOff.png</normaloff>
             <normalon>:/Icons/VisibleOn.png</normalon>:/Icons/VisibleOff.png</iconset>
           </property>
@@ -996,7 +996,6 @@
  </customwidgets>
  <resources>
   <include location="../qSlicerCameraPathModule.qrc"/>
-  <include location="../../../../../../debug-iVSPlan/Slicer/Libs/MRML/Widgets/Resources/qMRMLWidgets.qrc"/>
  </resources>
  <connections>
   <connection>

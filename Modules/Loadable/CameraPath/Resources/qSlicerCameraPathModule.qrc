@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
+        <file>Icons/VisibleOn.png</file>
+        <file>Icons/VisibleOff.png</file>
         <file>Icons/Delete.png</file>
         <file>Icons/DeleteAll.png</file>
         <file>Icons/DeleteSelected.png</file>
