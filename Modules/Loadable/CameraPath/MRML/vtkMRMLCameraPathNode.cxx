@@ -228,6 +228,7 @@ void vtkMRMLCameraPathNode::SetKeyFrames(KeyFrameVector keyFrames)
   this->Internal->KeyFrames = keyFrames;
   this->SortKeyFrames();
 
+  this->Modified();
   // TODO : Update splines
 }
 
@@ -267,6 +268,8 @@ void vtkMRMLCameraPathNode::SetKeyFrame(vtkIdType index, KeyFrame keyFrame)
   this->GetFocalPointSplines()->AddPoint(keyFrame.Time, keyFrame.Camera->GetFocalPoint());
   this->GetViewUpSplines()->AddPoint(keyFrame.Time, keyFrame.Camera->GetViewUp());
   this->CreatePath();
+
+  this->Modified();
 }
 
 //----------------------------------------------------------------------------
@@ -304,6 +307,8 @@ void vtkMRMLCameraPathNode::SetKeyFrameTime(vtkIdType index, double time)
   this->GetFocalPointSplines()->AddPoint(time, oldKeyFrame.Camera->GetFocalPoint());
   this->GetViewUpSplines()->AddPoint(time, oldKeyFrame.Camera->GetViewUp());
   this->CreatePath();
+
+  this->Modified();
 }
 
 //----------------------------------------------------------------------------
@@ -332,6 +337,8 @@ void vtkMRMLCameraPathNode::SetKeyFrameCamera(vtkIdType index,
   this->GetFocalPointSplines()->AddPoint(time, camera->GetFocalPoint());
   this->GetViewUpSplines()->AddPoint(time, camera->GetViewUp());
   this->CreatePath();
+
+  this->Modified();
 }
 
 //----------------------------------------------------------------------------
@@ -358,6 +365,8 @@ void vtkMRMLCameraPathNode::SetKeyFramePosition(vtkIdType index,
   double time = this->GetKeyFrame(index).Time;
   this->GetPositionSplines()->AddPoint(time, position);
   this->CreatePath();
+
+  this->Modified();
 }
 
 //----------------------------------------------------------------------------
@@ -383,6 +392,8 @@ void vtkMRMLCameraPathNode::SetKeyFrameFocalPoint(vtkIdType index,
 
   double time = this->GetKeyFrame(index).Time;
   this->GetFocalPointSplines()->AddPoint(time, focalPoint);
+
+  this->Modified();
 }
 
 //----------------------------------------------------------------------------
@@ -408,6 +419,8 @@ void vtkMRMLCameraPathNode::SetKeyFrameViewUp(vtkIdType index,
 
   double time = this->GetKeyFrame(index).Time;
   this->GetViewUpSplines()->AddPoint(time, viewUp);
+
+  this->Modified();
 }
 
 //---------------------------------------------------------------------------
@@ -430,6 +443,8 @@ void vtkMRMLCameraPathNode::AddKeyFrame(KeyFrame keyFrame)
   this->GetFocalPointSplines()->AddPoint(t, keyFrame.Camera->GetFocalPoint());
   this->GetViewUpSplines()->AddPoint(t, keyFrame.Camera->GetViewUp());
   this->CreatePath();
+
+  this->Modified();
 }
 
 //---------------------------------------------------------------------------
@@ -483,6 +498,8 @@ void vtkMRMLCameraPathNode::RemoveKeyFrames()
 
   // Remove keyframes
   this->Internal->KeyFrames.clear();
+
+  this->Modified();
 }
 
 //---------------------------------------------------------------------------
@@ -507,6 +524,8 @@ void vtkMRMLCameraPathNode::RemoveKeyFrame(vtkIdType index)
   // Remove keyframe
   this->Internal->KeyFrames.erase(
               this->Internal->KeyFrames.begin() + index);
+
+  this->Modified();
 }
 
 
@@ -569,6 +588,7 @@ void vtkMRMLCameraPathNode::SetPointSplines(vtkMRMLPointSplineNode* positions,
   this->Internal->Positions = positions;
   this->Internal->FocalPoints = focalPoints;
   this->Internal->ViewUps = viewUps;
+  this->Modified();
 }
 
 //---------------------------------------------------------------------------

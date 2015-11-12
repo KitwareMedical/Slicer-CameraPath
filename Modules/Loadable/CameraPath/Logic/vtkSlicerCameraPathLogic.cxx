@@ -154,12 +154,14 @@ char* vtkSlicerCameraPathLogic::LoadCameraPath(const char *fileName, const char 
   vtkNew<vtkMRMLCameraPathNode> cameraPathNode;
   cameraPathNode->SetName(nodeName);
 
+  // Disable modified event
+  cameraPathNode->DisableModifiedEventOn();
+
   // adding nodes to scene
   this->GetMRMLScene()->AddNode(storageNode.GetPointer());
   this->GetMRMLScene()->AddNode(cameraPathNode.GetPointer());
   idList += std::string(cameraPathNode->GetID());
-/*
-  // Already added ?
+
   this->GetMRMLScene()->AddNode(cameraPathNode->GetPositionSplines());
   idList += std::string(",");
   idList += std::string(cameraPathNode->GetPositionSplines()->GetID());
@@ -171,7 +173,6 @@ char* vtkSlicerCameraPathLogic::LoadCameraPath(const char *fileName, const char 
   this->GetMRMLScene()->AddNode(cameraPathNode->GetViewUpSplines());
   idList += std::string(",");
   idList += std::string(cameraPathNode->GetViewUpSplines()->GetID());
-*/
 
   // read the file
   if (!storageNode->ReadData(cameraPathNode.GetPointer()))
@@ -191,6 +192,10 @@ char* vtkSlicerCameraPathLogic::LoadCameraPath(const char *fileName, const char 
     idList += std::string(",");
     idList += std::string(cameraNode->GetID());
     }
+
+  // Enable modified event
+  cameraPathNode->DisableModifiedEventOff();
+  cameraPathNode->Modified();
 
   // removing storage node
   this->GetMRMLScene()->RemoveNode(storageNode.GetPointer());
