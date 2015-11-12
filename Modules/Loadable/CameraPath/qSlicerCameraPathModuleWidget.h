@@ -43,6 +43,7 @@ public:
   qSlicerCameraPathModuleWidget(QWidget *parent=0);
   virtual ~qSlicerCameraPathModuleWidget();
 
+  void travelToTime(double t);
   void populateKeyFramesTableWidget();
   void emptyKeyFramesTableWidget();
   void emptyCameraTableWidget();
