@@ -161,9 +161,6 @@ void qSlicerCameraPathModuleWidget::setup()
   d->keyFramesTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   d->keyFramesTableWidget->setColumnWidth(0,80);
   d->keyFramesTableWidget->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-  d->keyFramesTableWidget->horizontalHeader()->setResizeMode(2, QHeaderView::Interactive);
-  d->keyFramesTableWidget->setColumnWidth(2,50);
-  d->keyFramesTableWidget->setColumnWidth(3,50);
   connect(d->keyFramesTableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onCellChanged(int, int)));
   connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onItemClicked(QTableWidgetItem*)));
 
@@ -585,7 +582,7 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
   // selected indices for each column in a row, so jump by the number of
   // columns), so can delete without relying on the table
   QList<int> rows;
-  for (int i = 0; i < selectedItems.size(); i += 2)
+  for (int i = 0; i < selectedItems.size(); i += d->keyFramesTableWidget->columnCount())
     {
     // get the row
     int row = selectedItems.at(i)->row();
@@ -664,7 +661,7 @@ void qSlicerCameraPathModuleWidget::onGoToKeyFrameClicked()
   QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
 
   // Make sure that only one is selected
-  if (selectedItems.size() != 2)
+  if (selectedItems.size() != d->keyFramesTableWidget->columnCount())
     {
     return;
     }
@@ -702,7 +699,7 @@ void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
   QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
 
   // Make sure that only one is selected
-  if (selectedItems.size() != 2)
+  if (selectedItems.size() != d->keyFramesTableWidget->columnCount())
     {
     return;
     }
@@ -895,7 +892,7 @@ void qSlicerCameraPathModuleWidget::onItemClicked(QTableWidgetItem* item)
   QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
 
   // Make sure that only one is selected
-  if (selectedItems.size() != 2)
+  if (selectedItems.size() != d->keyFramesTableWidget->columnCount())
     {
     this->emptyCameraTableWidget();
     return;
@@ -932,7 +929,7 @@ void qSlicerCameraPathModuleWidget::onKeyFrameCameraModified(vtkObject *caller)
   QList<QTableWidgetItem *> selectedItems = d->keyFramesTableWidget->selectedItems();
 
   // Make sure that only one is selected
-  if (selectedItems.size() != 2)
+  if (selectedItems.size() != d->keyFramesTableWidget->columnCount())
     {
     return;
     }
