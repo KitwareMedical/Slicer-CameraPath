@@ -1147,7 +1147,8 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
       {
       std::stringstream ss;
       ss << path.toStdString() << "/"
-         << baseName.toStdString() << "_" << i
+         << baseName.toStdString() << "_"
+         << std::setfill('0') << std::setw(5)<<i
          << "." << suffix.toStdString();
       const std::string s = ss.str();
       const char* screenshotFileName = s.c_str();
