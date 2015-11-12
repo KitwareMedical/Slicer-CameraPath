@@ -390,10 +390,7 @@ void qSlicerCameraPathModuleWidget::onTimeSliderChanged(int frameNbr)
   vtkMRMLCameraPathNode* cameraPathNode =
           vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
 
-  vtkMRMLCameraNode* cameraNode =
-          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
-
-  if (!cameraPathNode || !cameraNode)
+  if (!cameraPathNode)
     {
     return;
     }
@@ -403,27 +400,8 @@ void qSlicerCameraPathModuleWidget::onTimeSliderChanged(int frameNbr)
   double tmin = cameraPathNode->GetMinimumT();
   double t = (frameNbr/(double)framerate) + tmin;
 
-  // Update default camera
-  if (cameraPathNode->GetNumberOfKeyFrames() != 0)
-    {
-    cameraPathNode->GetCameraAt(t, cameraNode);
-    cameraNode->GetCamera()->SetClippingRange(0.1,cameraNode->GetCamera()->GetDistance()*6);
-    }
-
-  // Update time label
-  std::stringstream stream;
-  stream << std::fixed << std::setprecision(1) << t;
-  std::string s = stream.str();
-  d->timeValueLabel->setText(QString::fromStdString(s));
-
-  // Check if time associated with a keyframe
-  vtkIdType index = cameraPathNode->KeyFrameIndexAt(t);
-  if (index != -1)
-    {
-    // Select row
-    d->keyFramesTableWidget->selectRow(index);
-    this->onItemClicked(d->keyFramesTableWidget->item(index,1));
-    }
+  // Travel to time
+  this->travelToTime(t);
 }
 
 //-----------------------------------------------------------------------------
@@ -552,10 +530,7 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
   vtkMRMLCameraPathNode* cameraPathNode =
           vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
 
-  vtkMRMLCameraNode* defaultCameraNode =
-          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
-
-  if (!cameraPathNode || !defaultCameraNode)
+  if (!cameraPathNode)
     {
     return;
     }
@@ -626,10 +601,7 @@ void qSlicerCameraPathModuleWidget::onGoToKeyFrameClicked()
   vtkMRMLCameraPathNode* cameraPathNode =
           vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
 
-  vtkMRMLCameraNode* defaultCameraNode =
-          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
-
-  if (!cameraPathNode || !defaultCameraNode)
+  if (!cameraPathNode)
     {
     return;
     }
@@ -653,6 +625,11 @@ void qSlicerCameraPathModuleWidget::onGoToKeyFrameClicked()
   int frameNbr = framerate * int(t - tmin);
 
   // Set slider to value
+  if(d->timeSlider->value() == frameNbr)
+  {
+    // If slider already set
+    this->travelToTime(t);
+  }
   d->timeSlider->setValue(frameNbr);
 }
 
@@ -1132,6 +1109,45 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
   d->exportSection->setEnabled(true);
 }
 
+
+//-----------------------------------------------------------------------------
+void qSlicerCameraPathModuleWidget::travelToTime(double t)
+{
+  Q_D(qSlicerCameraPathModuleWidget);
+
+  vtkMRMLCameraPathNode* cameraPathNode =
+          vtkMRMLCameraPathNode::SafeDownCast(d->cameraPathComboBox->currentNode());
+
+  vtkMRMLCameraNode* cameraNode =
+          vtkMRMLCameraNode::SafeDownCast(d->defaultCameraComboBox->currentNode());
+
+  if (!cameraPathNode || !cameraNode)
+    {
+    return;
+    }
+
+  // Update default camera
+  if (cameraPathNode->GetNumberOfKeyFrames() != 0)
+    {
+    cameraPathNode->GetCameraAt(t, cameraNode);
+    cameraNode->GetCamera()->SetClippingRange(0.1,cameraNode->GetCamera()->GetDistance()*6);
+    }
+
+  // Update time label
+  std::stringstream stream;
+  stream << std::fixed << std::setprecision(1) << t;
+  std::string s = stream.str();
+  d->timeValueLabel->setText(QString::fromStdString(s));
+
+  // Check if time associated with a keyframe
+  vtkIdType index = cameraPathNode->KeyFrameIndexAt(t);
+  if (index != -1)
+    {
+    // Select row
+    d->keyFramesTableWidget->selectRow(index);
+    this->onItemClicked(d->keyFramesTableWidget->item(index,1));
+    }
+}
 
 //-----------------------------------------------------------------------------
 void qSlicerCameraPathModuleWidget::populateKeyFramesTableWidget()
