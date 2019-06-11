@@ -1,8 +1,12 @@
-# IVSPlan: the Intelligent Virtual Surgical Planning application software
+# CameraPath: Slicer module for Intelligent Virtual Surgical Planning
+
+## Background
 
 This project was created as a sandbox to design surgical planning tools leveraging 3D Slicer and the Slicer Custom App Template.
 
  **This project is not currently maintained. See the 3D Slicer [discourse forum] to learn how we plan to reuse some of IVSPlan's features in 3D Slicer**
+
+## Modules
 
 It provides two modules:
 
