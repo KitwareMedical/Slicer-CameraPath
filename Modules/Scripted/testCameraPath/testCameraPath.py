@@ -97,19 +97,19 @@ class testCameraPathWidget:
         self.Flying = False
 
     def onRemoveButton(self):
-       print "-- Removing KeyFrames"
+       print("-- Removing KeyFrames")
        self.cameraPath.RemoveKeyFrames()
 
        if self.CameraList:
            for camera in self.CameraList:
-               print camera.GetName()
+               print(camera.GetName())
                slicer.mrmlScene.RemoveNode(camera)
            del self.CameraList[:]
 
        self.Time = 0
 
     def onAddButton(self):
-        print " -- Adding Keyframe at t =",self.Time
+        print(" -- Adding Keyframe at t =", self.Time)
         camera = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCameraNode')
         slicer.mrmlScene.AddNode(camera)
 
@@ -126,7 +126,7 @@ class testCameraPathWidget:
         camera.SetViewUp(value)
 
         cameraName = 'Camera T = '+str(self.Time)
-        print cameraName
+        print(cameraName)
         camera.SetName(cameraName)
 
         self.cameraPath.AddKeyFrame(self.Time, camera)
@@ -136,13 +136,13 @@ class testCameraPathWidget:
         self.FlyButton.setEnabled(False)
 
     def onCreateButton(self):
-        print " -- Creating Path"
+        print(" -- Creating Path")
         self.cameraPath.CreatePath();
         self.FlyButton.setEnabled(True)
 
     def onFlyButton(self):
         if not self.Flying:
-            print " -- FLYING !"
+            print(" -- FLYING !")
             self.Flying = True
             self.FlyButton.setText("Stop")
             for t in range(0,self.Time-99):
@@ -150,14 +150,14 @@ class testCameraPathWidget:
                     return
                 self.cameraPath.GetCameraAt(t,self.defaultCam)
                 self.defaultCam.ResetClippingRange()
-                print t
+                print(t)
                 slicer.app.processEvents()
                 time.sleep(0.05)
-            print "End"
+            print("End")
             self.Flying = False
             self.FlyButton.setText("Fly!")
         else:
-            print " -- Stopped"
+            print(" -- Stopped")
             self.Flying = False
             self.FlyButton.setText("Fly!")
         self.FlyButton.setEnabled(True)
