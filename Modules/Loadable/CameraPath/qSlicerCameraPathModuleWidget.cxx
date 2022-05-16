@@ -164,7 +164,7 @@ void qSlicerCameraPathModuleWidget::setup()
   // Keyframes table widget
   d->keyFramesTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   d->keyFramesTableWidget->setColumnWidth(0,80);
-  d->keyFramesTableWidget->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+  d->keyFramesTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
   connect(d->keyFramesTableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onCellChanged(int, int)));
   connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onItemClicked(QTableWidgetItem*)));
 
