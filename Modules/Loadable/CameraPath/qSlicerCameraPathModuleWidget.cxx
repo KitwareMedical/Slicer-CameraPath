@@ -557,7 +557,7 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
     rows << row;
     }
   // sort the list
-  qSort(rows);
+  std::sort(rows.begin(), rows.end());
 
   // Popup window to ask the delete confirmation
   ctkMessageBox deleteMsgBox;
