@@ -49,7 +49,9 @@
 #include "vtkRenderWindow.h"
 #include "vtkWindowToImageFilter.h"
 #include "vtkPNGWriter.h"
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
 #include "vtkFFMPEGWriter.h"
+#endif
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -1024,14 +1026,20 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
       }
     }
 
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
   vtkNew<vtkFFMPEGWriter> FFMPEGWriter;
+#endif
   if(exportType == VIDEOCLIP)
     {
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
     FFMPEGWriter->SetInputConnection(w2i->GetOutputPort());
     FFMPEGWriter->SetQuality(exportQuality);
     FFMPEGWriter->SetFileName(fileName.toStdString().c_str());
     FFMPEGWriter->SetRate(d->fpsSpinBox->value());
     FFMPEGWriter->Start();
+#else
+      qWarning() << "Export failed: CameraPath module build without video export support";
+#endif
     }
 
   // Create progress dialog
@@ -1075,8 +1083,10 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
     // Write video frame
     if(exportType == VIDEOCLIP)
       {
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
       qDebug() <<"Writing frame "<< i << "/" << d->timeSlider->maximum();
       FFMPEGWriter->Write();
+#endif
       }
 
     // Update progress dialog
@@ -1094,7 +1104,9 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
   // End video
   if(exportType == VIDEOCLIP)
     {
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
     FFMPEGWriter->End();
+#endif
     }
 
   // Reset renderwindow size
