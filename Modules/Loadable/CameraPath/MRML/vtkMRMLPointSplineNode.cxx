@@ -115,12 +115,12 @@ void vtkMRMLPointSplineNode::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 void vtkMRMLPointSplineNode::CreateDefaultDisplayNodes()
 {
-  if (vtkMRMLModelDisplayNode::SafeDownCast(this->GetDisplayNode())!=NULL)
+  if (vtkMRMLModelDisplayNode::SafeDownCast(this->GetDisplayNode()) != nullptr)
     {
     // display node already exists
     return;
     }
-  if (this->GetScene()==NULL)
+  if (this->GetScene() == nullptr)
     {
     vtkErrorMacro("vtkMRMLPointSplineNode::CreateDefaultDisplayNodes failed: scene is invalid");
     return;

@@ -37,7 +37,7 @@ qSlicerCameraPathModule
 public:
 
   typedef qSlicerLoadableModule Superclass;
-  explicit qSlicerCameraPathModule(QObject *parent=0);
+  explicit qSlicerCameraPathModule(QObject *parent=nullptr);
   virtual ~qSlicerCameraPathModule();
 
   qSlicerGetTitleMacro(QTMODULE_TITLE);

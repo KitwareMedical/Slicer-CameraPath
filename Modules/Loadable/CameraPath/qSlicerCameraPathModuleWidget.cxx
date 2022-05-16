@@ -98,7 +98,7 @@ qSlicerCameraPathModuleWidgetPrivate::logic() const
   Q_Q(const qSlicerCameraPathModuleWidget);
 
   vtkSlicerCameraPathLogic* logic=vtkSlicerCameraPathLogic::SafeDownCast(q->logic());
-  if (logic==NULL)
+  if (logic == nullptr)
   {
     qCritical() << "Camera path logic is invalid";
   }
