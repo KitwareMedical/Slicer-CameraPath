@@ -683,14 +683,13 @@ void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
         cameraPathNode->GetKeyFrameCamera(index);
 
     // Update keyframe camera
-    keyframeCameraNode->DisableModifiedEventOn();
-    keyframeCameraNode->CopyWithoutModifiedEvent(defaultCameraNode);
+    MRMLNodeModifyBlocker blocker(keyframeCameraNode);
+
+    keyframeCameraNode->Copy(defaultCameraNode);
     keyframeCameraNode->SetHideFromEditors(1);
     QString cameraPathName(cameraPathNode->GetName());
     QString cameraName(cameraPathName+"_Camera");
     keyframeCameraNode->SetName(cameraName.toStdString().c_str());
-    keyframeCameraNode->DisableModifiedEventOff();
-    keyframeCameraNode->Modified();
 
     // XXX Update splines
     cameraPathNode->SetKeyFrameCamera(index,keyframeCameraNode);
