@@ -27,6 +27,12 @@ struct KeyFrame
       Time(time)
   {}
 
+  KeyFrame(const KeyFrame& a)
+    {
+    Camera = a.Camera;
+    Time = a.Time;
+    }
+
   KeyFrame& operator = (const KeyFrame& a)
     {
     Camera = a.Camera;
