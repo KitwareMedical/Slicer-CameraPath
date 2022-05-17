@@ -685,7 +685,7 @@ void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
     // Update keyframe camera
     MRMLNodeModifyBlocker blocker(keyframeCameraNode);
 
-    keyframeCameraNode->Copy(defaultCameraNode);
+    keyframeCameraNode->CopyContent(defaultCameraNode);
     keyframeCameraNode->SetHideFromEditors(1);
     QString cameraPathName(cameraPathNode->GetName());
     QString cameraName(cameraPathName+"_Camera");
@@ -741,7 +741,7 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
 
   // Create new camera
   vtkNew<vtkMRMLCameraNode> newCameraNode;
-  newCameraNode->Copy(defaultCameraNode);
+  newCameraNode->CopyContent(defaultCameraNode);
   newCameraNode->SetHideFromEditors(1);
   QString cameraPathName(cameraPathNode->GetName());
   QString newCameraName(cameraPathName+"_Camera");
