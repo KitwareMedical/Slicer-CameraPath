@@ -163,8 +163,7 @@ void qSlicerCameraPathModuleWidget::setup()
 
   // Keyframes table widget
   d->keyFramesTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-  d->keyFramesTableWidget->setColumnWidth(0,80);
-  d->keyFramesTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+  d->keyFramesTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
   connect(d->keyFramesTableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onCellChanged(int, int)));
   connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onItemClicked(QTableWidgetItem*)));
 
@@ -811,8 +810,8 @@ void qSlicerCameraPathModuleWidget::onItemClicked(QTableWidgetItem* item)
   // Get Keyframe index
   int index = item->row();
 
-  // Set selected camera
-  d->selectedCameraIDLineEdit->setText(d->keyFramesTableWidget->item(index, 1)->text());
+  // Set selected key frame
+  d->selectedKeyFrameIDLineEdit->setText(QString::number(index));
 
   // Update camera table
   d->cameraTableWidget->setEnabled(true);
@@ -1182,7 +1181,6 @@ void qSlicerCameraPathModuleWidget::populateKeyFramesTableWidget()
     {
     // Get Key frame info
     double t = keyFrames.at(i).Time;
-    char* cameraID = keyFrames.at(i).Camera->GetID();
 
     // Add Key frame in table
     table->insertRow(table->rowCount());
@@ -1190,10 +1188,6 @@ void qSlicerCameraPathModuleWidget::populateKeyFramesTableWidget()
     QTableWidgetItem* timeItem = new QTableWidgetItem();
     timeItem->setData(Qt::DisplayRole,t);
     table->setItem(table->rowCount()-1, 0, timeItem );
-
-    QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(cameraID));
-    cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
-    table->setItem(table->rowCount()-1, 1, cameraItem);
     }
 
   // Unblock signals from table
@@ -1216,7 +1210,7 @@ void qSlicerCameraPathModuleWidget::emptyCameraTableWidget()
 {
   Q_D(qSlicerCameraPathModuleWidget);
 
-  d->selectedCameraIDLineEdit->setText("Please select one keyframe");
+  d->selectedKeyFrameIDLineEdit->setText("Please select one keyframe");
   d->cameraTableWidget->clearContents();
   d->cameraTableWidget->setEnabled(false);
 }
