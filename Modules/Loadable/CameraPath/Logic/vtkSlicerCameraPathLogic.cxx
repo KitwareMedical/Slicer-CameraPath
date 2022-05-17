@@ -82,7 +82,7 @@ void vtkSlicerCameraPathLogic::UpdateFromMRMLScene()
 //---------------------------------------------------------------------------
 void vtkSlicerCameraPathLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
 {
-  if (node==NULL)
+  if (node == nullptr)
   {
     vtkErrorMacro("An invalid node is attempted to be added");
     return;
@@ -104,7 +104,7 @@ void vtkSlicerCameraPathLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
 //---------------------------------------------------------------------------
 void vtkSlicerCameraPathLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
 {
-  if (node==NULL)
+  if (node == nullptr)
   {
     vtkErrorMacro("An invalid node is attempted to be removed");
     return;
@@ -124,23 +124,23 @@ void vtkSlicerCameraPathLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
 //---------------------------------------------------------------------------
 char* vtkSlicerCameraPathLogic::LoadCameraPath(const char *fileName, const char *nodeName)
 {
-  char *nodeIDs = NULL;
+  char *nodeIDs = nullptr;
   std::string idList;
 
   if (!fileName)
     {
     vtkErrorMacro("LoadCameraPath: null file name, cannot load");
-    return NULL;
+    return nullptr;
     }
   if (fileName[0] == '\0')
     {
     vtkErrorMacro("LoadCameraPath: empty file name, cannot load");
-    return NULL;
+    return nullptr;
     }
   if (!this->GetMRMLScene())
     {
     vtkErrorMacro("LoadCameraPath: no MRML scene, cannot load");
-    return NULL;
+    return nullptr;
     }
 
   // turn on batch processing
@@ -180,7 +180,7 @@ char* vtkSlicerCameraPathLogic::LoadCameraPath(const char *fileName, const char 
     vtkErrorMacro("LoadCameraPath: coud not read data");
     this->GetMRMLScene()->RemoveNode(cameraPathNode.GetPointer());
     this->GetMRMLScene()->RemoveNode(storageNode.GetPointer());
-    return NULL;
+    return nullptr;
     }
 
   // adding camera nodes to scene

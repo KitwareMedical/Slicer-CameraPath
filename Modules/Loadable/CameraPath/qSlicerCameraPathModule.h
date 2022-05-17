@@ -31,12 +31,13 @@ qSlicerCameraPathModule
   : public qSlicerLoadableModule
 {
   Q_OBJECT
+  Q_PLUGIN_METADATA(IID "org.slicer.modules.loadable.qSlicerLoadableModule/1.0");
   Q_INTERFACES(qSlicerLoadableModule);
 
 public:
 
   typedef qSlicerLoadableModule Superclass;
-  explicit qSlicerCameraPathModule(QObject *parent=0);
+  explicit qSlicerCameraPathModule(QObject *parent=nullptr);
   virtual ~qSlicerCameraPathModule();
 
   qSlicerGetTitleMacro(QTMODULE_TITLE);

@@ -56,7 +56,7 @@ public:
   void AddPoint(double t, double point[3]);
   void RemovePoint(double t);
   void UpdatePolyData(int framerate);
-  void Evaluate(double t, double point[3]=0);
+  void Evaluate(double t, double point[3]=nullptr);
 
 protected:
   vtkMRMLPointSplineNode();

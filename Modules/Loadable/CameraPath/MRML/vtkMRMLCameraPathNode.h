@@ -21,11 +21,17 @@ struct KeyFrame
   //bool Locked;
   //bool Visibility;
 
-  KeyFrame(vtkMRMLCameraNode* camera = NULL,
+  KeyFrame(vtkMRMLCameraNode* camera = nullptr,
            double time = 0.0):
       Camera(camera),
       Time(time)
   {}
+
+  KeyFrame(const KeyFrame& a)
+    {
+    Camera = a.Camera;
+    Time = a.Time;
+    }
 
   KeyFrame& operator = (const KeyFrame& a)
     {
@@ -98,9 +104,9 @@ public:
   KeyFrame GetKeyFrame(vtkIdType index);
   double GetKeyFrameTime(vtkIdType index);
   vtkMRMLCameraNode* GetKeyFrameCamera(vtkIdType index);
-  void GetKeyFramePosition(vtkIdType index, double position[3] = 0);
-  void GetKeyFrameFocalPoint(vtkIdType index, double focalPoint[3] = 0);
-  void GetKeyFrameViewUp(vtkIdType index, double viewUp[3] = 0);
+  void GetKeyFramePosition(vtkIdType index, double position[3] = nullptr);
+  void GetKeyFrameFocalPoint(vtkIdType index, double focalPoint[3] = nullptr);
+  void GetKeyFrameViewUp(vtkIdType index, double viewUp[3] = nullptr);
 
   void SetKeyFrames(KeyFrameVector keyFrames);
   void SetKeyFrame(vtkIdType index, KeyFrame keyFrame);
@@ -134,9 +140,9 @@ public:
                        vtkMRMLPointSplineNode* viewUps);
 
   void GetCameraAt(double t, vtkMRMLCameraNode* camera);
-  void GetPositionAt(double t, double position[3] = 0);
-  void GetFocalPointAt(double t, double focalPoint[3] = 0);
-  void GetViewUpAt(double t, double viewUp[3] = 0);
+  void GetPositionAt(double t, double position[3] = nullptr);
+  void GetFocalPointAt(double t, double focalPoint[3] = nullptr);
+  void GetViewUpAt(double t, double viewUp[3] = nullptr);
   double ClampTime(double t);
 
 protected:

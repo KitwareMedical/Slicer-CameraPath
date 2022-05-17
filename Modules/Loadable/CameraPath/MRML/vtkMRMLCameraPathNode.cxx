@@ -249,7 +249,7 @@ void vtkMRMLCameraPathNode::SetKeyFrame(vtkIdType index, KeyFrame keyFrame)
   vtkIdType otherIndex = this->KeyFrameIndexAt(keyFrame.Time);
   if (otherIndex != -1)
     {
-    std::cerr << "A keyframe already exists for t = " << time << std::endl
+    std::cerr << "A keyframe already exists for t = " << keyFrame.Time << std::endl
               << "Keyframe ID : " << otherIndex << std::endl
               << std::endl;
     return;
@@ -451,7 +451,11 @@ void vtkMRMLCameraPathNode::AddKeyFrame(KeyFrame keyFrame)
 void vtkMRMLCameraPathNode::AddKeyFrame(double t,
                                         vtkMRMLCameraNode* camera)
 {
-  KeyFrame keyFrame(camera, t);
+  vtkNew<vtkMRMLCameraNode> newCamera;
+  newCamera->SetPosition(camera->GetPosition());
+  newCamera->SetFocalPoint(camera->GetFocalPoint());
+  newCamera->SetViewUp(camera->GetViewUp());
+  KeyFrame keyFrame(newCamera, t);
   this->AddKeyFrame(keyFrame);
 }
 

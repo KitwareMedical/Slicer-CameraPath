@@ -32,9 +32,6 @@
 #include "qSlicerCameraPathReader.h"
 
 //-----------------------------------------------------------------------------
-Q_EXPORT_PLUGIN2(qSlicerCameraPathModule, qSlicerCameraPathModule);
-
-//-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerCameraPathModulePrivate
 {

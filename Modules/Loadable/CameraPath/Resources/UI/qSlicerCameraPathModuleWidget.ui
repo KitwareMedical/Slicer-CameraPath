@@ -609,11 +609,6 @@
           <string>Time</string>
          </property>
         </column>
-        <column>
-         <property name="text">
-          <string>Camera</string>
-         </property>
-        </column>
        </widget>
       </item>
      </layout>
@@ -631,14 +626,14 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
-         <widget class="QLabel" name="selectedCameraIDLabel">
+         <widget class="QLabel" name="selectedKeyFrameIDLabel">
           <property name="text">
-           <string>Camera ID :</string>
+           <string>KeyFrame ID :</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="selectedCameraIDLineEdit">
+         <widget class="QLineEdit" name="selectedKeyFrameIDLineEdit">
           <property name="text">
            <string>no key frame selected</string>
           </property>

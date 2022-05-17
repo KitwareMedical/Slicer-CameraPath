@@ -40,7 +40,7 @@ class Q_SLICER_QTMODULES_CAMERAPATH_EXPORT qSlicerCameraPathModuleWidget :
 public:
 
   typedef qSlicerAbstractModuleWidget Superclass;
-  qSlicerCameraPathModuleWidget(QWidget *parent=0);
+  qSlicerCameraPathModuleWidget(QWidget *parent=nullptr);
   virtual ~qSlicerCameraPathModuleWidget();
 
   void travelToTime(double t);

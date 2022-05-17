@@ -107,7 +107,7 @@ bool qSlicerCameraPathReader::load(const IOProperties& properties)
     name = properties["name"].toString();
     }
 
-  if (d->CameraPathLogic.GetPointer() == 0)
+  if (d->CameraPathLogic.GetPointer() == nullptr)
     {
     return false;
     }
@@ -125,7 +125,7 @@ bool qSlicerCameraPathReader::load(const IOProperties& properties)
     while (ptr)
       {
       nodeIDList.append(ptr);
-      ptr = strtok(NULL, ",");
+      ptr = strtok(nullptr, ",");
       }
     this->setLoadedNodes(nodeIDList);
     }
@@ -135,5 +135,5 @@ bool qSlicerCameraPathReader::load(const IOProperties& properties)
     return false;
     }
 
-  return nodeIDs != 0;
+  return nodeIDs != nullptr;
 }

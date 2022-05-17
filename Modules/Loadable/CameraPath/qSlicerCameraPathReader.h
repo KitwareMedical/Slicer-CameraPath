@@ -32,8 +32,8 @@ class qSlicerCameraPathReader
   Q_OBJECT
 public:
   typedef qSlicerFileReader Superclass;
-  qSlicerCameraPathReader(QObject* parent = 0);
-  qSlicerCameraPathReader(vtkSlicerCameraPathLogic* logic, QObject* parent = 0);
+  qSlicerCameraPathReader(QObject* parent = nullptr);
+  qSlicerCameraPathReader(vtkSlicerCameraPathLogic* logic, QObject* parent = nullptr);
   virtual ~qSlicerCameraPathReader();
 
   vtkSlicerCameraPathLogic* CameraPathLogic()const;

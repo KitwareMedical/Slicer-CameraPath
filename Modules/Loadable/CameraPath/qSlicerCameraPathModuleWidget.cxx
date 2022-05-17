@@ -49,7 +49,9 @@
 #include "vtkRenderWindow.h"
 #include "vtkWindowToImageFilter.h"
 #include "vtkPNGWriter.h"
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
 #include "vtkFFMPEGWriter.h"
+#endif
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -96,7 +98,7 @@ qSlicerCameraPathModuleWidgetPrivate::logic() const
   Q_Q(const qSlicerCameraPathModuleWidget);
 
   vtkSlicerCameraPathLogic* logic=vtkSlicerCameraPathLogic::SafeDownCast(q->logic());
-  if (logic==NULL)
+  if (logic == nullptr)
   {
     qCritical() << "Camera path logic is invalid";
   }
@@ -161,8 +163,7 @@ void qSlicerCameraPathModuleWidget::setup()
 
   // Keyframes table widget
   d->keyFramesTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-  d->keyFramesTableWidget->setColumnWidth(0,80);
-  d->keyFramesTableWidget->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+  d->keyFramesTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
   connect(d->keyFramesTableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onCellChanged(int, int)));
   connect(d->keyFramesTableWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(onItemClicked(QTableWidgetItem*)));
 
@@ -555,7 +556,7 @@ void qSlicerCameraPathModuleWidget::onDeleteSelectedClicked()
     rows << row;
     }
   // sort the list
-  qSort(rows);
+  std::sort(rows.begin(), rows.end());
 
   // Popup window to ask the delete confirmation
   ctkMessageBox deleteMsgBox;
@@ -681,14 +682,13 @@ void qSlicerCameraPathModuleWidget::onUpdateKeyFrameClicked()
         cameraPathNode->GetKeyFrameCamera(index);
 
     // Update keyframe camera
-    keyframeCameraNode->DisableModifiedEventOn();
-    keyframeCameraNode->CopyWithoutModifiedEvent(defaultCameraNode);
+    MRMLNodeModifyBlocker blocker(keyframeCameraNode);
+
+    keyframeCameraNode->CopyContent(defaultCameraNode);
     keyframeCameraNode->SetHideFromEditors(1);
     QString cameraPathName(cameraPathNode->GetName());
     QString cameraName(cameraPathName+"_Camera");
     keyframeCameraNode->SetName(cameraName.toStdString().c_str());
-    keyframeCameraNode->DisableModifiedEventOff();
-    keyframeCameraNode->Modified();
 
     // XXX Update splines
     cameraPathNode->SetKeyFrameCamera(index,keyframeCameraNode);
@@ -738,21 +738,12 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
     return;
     }
 
-  // Create new camera
-  vtkNew<vtkMRMLCameraNode> newCameraNode;
-  newCameraNode->Copy(defaultCameraNode);
-  newCameraNode->SetHideFromEditors(1);
-  QString cameraPathName(cameraPathNode->GetName());
-  QString newCameraName(cameraPathName+"_Camera");
-  newCameraNode->SetName(newCameraName.toStdString().c_str());
-  cameraPathNode->GetScene()->AddNode(newCameraNode.GetPointer());
-
   // Listen to new camera
-  this->qvtkConnect(newCameraNode.GetPointer(), vtkCommand::ModifiedEvent,
-                    this, SLOT(onKeyFrameCameraModified(vtkObject*)));
+  //this->qvtkConnect(defaultCameraNode, vtkCommand::ModifiedEvent,
+  //                  this, SLOT(onKeyFrameCameraModified(vtkObject*)));
 
   // Add key frame
-  cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
+  cameraPathNode->AddKeyFrame(t, defaultCameraNode);
 
   // Select new row
   index = cameraPathNode->KeyFrameIndexAt(t);
@@ -819,8 +810,8 @@ void qSlicerCameraPathModuleWidget::onItemClicked(QTableWidgetItem* item)
   // Get Keyframe index
   int index = item->row();
 
-  // Set selected camera
-  d->selectedCameraIDLineEdit->setText(d->keyFramesTableWidget->item(index, 1)->text());
+  // Set selected key frame
+  d->selectedKeyFrameIDLineEdit->setText(QString::number(index));
 
   // Update camera table
   d->cameraTableWidget->setEnabled(true);
@@ -1024,14 +1015,20 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
       }
     }
 
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
   vtkNew<vtkFFMPEGWriter> FFMPEGWriter;
+#endif
   if(exportType == VIDEOCLIP)
     {
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
     FFMPEGWriter->SetInputConnection(w2i->GetOutputPort());
     FFMPEGWriter->SetQuality(exportQuality);
     FFMPEGWriter->SetFileName(fileName.toStdString().c_str());
     FFMPEGWriter->SetRate(d->fpsSpinBox->value());
     FFMPEGWriter->Start();
+#else
+      qWarning() << "Export failed: CameraPath module build without video export support";
+#endif
     }
 
   // Create progress dialog
@@ -1075,8 +1072,10 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
     // Write video frame
     if(exportType == VIDEOCLIP)
       {
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
       qDebug() <<"Writing frame "<< i << "/" << d->timeSlider->maximum();
       FFMPEGWriter->Write();
+#endif
       }
 
     // Update progress dialog
@@ -1094,7 +1093,9 @@ void qSlicerCameraPathModuleWidget::onRecordClicked()
   // End video
   if(exportType == VIDEOCLIP)
     {
+#ifdef Slicer_CAMERA_PATH_EXPORT_VIDEO_SUPPORT
     FFMPEGWriter->End();
+#endif
     }
 
   // Reset renderwindow size
@@ -1180,7 +1181,6 @@ void qSlicerCameraPathModuleWidget::populateKeyFramesTableWidget()
     {
     // Get Key frame info
     double t = keyFrames.at(i).Time;
-    char* cameraID = keyFrames.at(i).Camera->GetID();
 
     // Add Key frame in table
     table->insertRow(table->rowCount());
@@ -1188,10 +1188,6 @@ void qSlicerCameraPathModuleWidget::populateKeyFramesTableWidget()
     QTableWidgetItem* timeItem = new QTableWidgetItem();
     timeItem->setData(Qt::DisplayRole,t);
     table->setItem(table->rowCount()-1, 0, timeItem );
-
-    QTableWidgetItem* cameraItem = new QTableWidgetItem(QString(cameraID));
-    cameraItem->setFlags(cameraItem->flags() ^ Qt::ItemIsEditable);
-    table->setItem(table->rowCount()-1, 1, cameraItem);
     }
 
   // Unblock signals from table
@@ -1214,7 +1210,7 @@ void qSlicerCameraPathModuleWidget::emptyCameraTableWidget()
 {
   Q_D(qSlicerCameraPathModuleWidget);
 
-  d->selectedCameraIDLineEdit->setText("Please select one keyframe");
+  d->selectedKeyFrameIDLineEdit->setText("Please select one keyframe");
   d->cameraTableWidget->clearContents();
   d->cameraTableWidget->setEnabled(false);
 }
