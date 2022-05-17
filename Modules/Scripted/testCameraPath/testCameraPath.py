@@ -79,7 +79,6 @@ class testCameraPathWidget:
         # LOGIC
         self.defaultCam = slicer.mrmlScene.GetNodeByID('vtkMRMLCameraNode1')
         self.Time = 0
-        self.CameraList = []
         self.cameraPath = slicer.vtkMRMLCameraPathNode()
         posSpline = self.cameraPath.GetPositionSplines()
         focalSpline = self.cameraPath.GetFocalPointSplines()
@@ -99,39 +98,13 @@ class testCameraPathWidget:
     def onRemoveButton(self):
        print("-- Removing KeyFrames")
        self.cameraPath.RemoveKeyFrames()
-
-       if self.CameraList:
-           for camera in self.CameraList:
-               print(camera.GetName())
-               slicer.mrmlScene.RemoveNode(camera)
-           del self.CameraList[:]
-
        self.Time = 0
 
     def onAddButton(self):
         print(" -- Adding Keyframe at t =", self.Time)
-        camera = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCameraNode')
-        slicer.mrmlScene.AddNode(camera)
 
-        x = vtk.mutable(0)
-        y = vtk.mutable(0)
-        z = vtk.mutable(0)
-        value = [x,y,z]
-
-        self.defaultCam.GetPosition(value)
-        camera.SetPosition(value)
-        self.defaultCam.GetFocalPoint(value)
-        camera.SetFocalPoint(value)
-        self.defaultCam.GetViewUp(value)
-        camera.SetViewUp(value)
-
-        cameraName = 'Camera T = '+str(self.Time)
-        print(cameraName)
-        camera.SetName(cameraName)
-
-        self.cameraPath.AddKeyFrame(self.Time, camera)
+        self.cameraPath.AddKeyFrame(self.Time, self.defaultCam)
         self.Time += 100
-        self.CameraList.append(camera)
 
         self.FlyButton.setEnabled(False)
 

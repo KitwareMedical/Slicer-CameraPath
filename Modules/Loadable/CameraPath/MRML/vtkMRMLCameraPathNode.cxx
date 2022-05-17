@@ -451,7 +451,11 @@ void vtkMRMLCameraPathNode::AddKeyFrame(KeyFrame keyFrame)
 void vtkMRMLCameraPathNode::AddKeyFrame(double t,
                                         vtkMRMLCameraNode* camera)
 {
-  KeyFrame keyFrame(camera, t);
+  vtkNew<vtkMRMLCameraNode> newCamera;
+  newCamera->SetPosition(camera->GetPosition());
+  newCamera->SetFocalPoint(camera->GetFocalPoint());
+  newCamera->SetViewUp(camera->GetViewUp());
+  KeyFrame keyFrame(newCamera, t);
   this->AddKeyFrame(keyFrame);
 }
 

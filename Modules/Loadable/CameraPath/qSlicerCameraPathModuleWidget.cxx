@@ -739,21 +739,12 @@ void qSlicerCameraPathModuleWidget::onAddKeyFrameClicked()
     return;
     }
 
-  // Create new camera
-  vtkNew<vtkMRMLCameraNode> newCameraNode;
-  newCameraNode->CopyContent(defaultCameraNode);
-  newCameraNode->SetHideFromEditors(1);
-  QString cameraPathName(cameraPathNode->GetName());
-  QString newCameraName(cameraPathName+"_Camera");
-  newCameraNode->SetName(newCameraName.toStdString().c_str());
-  cameraPathNode->GetScene()->AddNode(newCameraNode.GetPointer());
-
   // Listen to new camera
-  this->qvtkConnect(newCameraNode.GetPointer(), vtkCommand::ModifiedEvent,
-                    this, SLOT(onKeyFrameCameraModified(vtkObject*)));
+  //this->qvtkConnect(defaultCameraNode, vtkCommand::ModifiedEvent,
+  //                  this, SLOT(onKeyFrameCameraModified(vtkObject*)));
 
   // Add key frame
-  cameraPathNode->AddKeyFrame(t, newCameraNode.GetPointer());
+  cameraPathNode->AddKeyFrame(t, defaultCameraNode);
 
   // Select new row
   index = cameraPathNode->KeyFrameIndexAt(t);
